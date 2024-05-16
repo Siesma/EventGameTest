@@ -16,9 +16,9 @@ public class SoundGenerator {
 
     private List<MidiChannel> channels;
 
-    public SoundGenerator(int evolveDuration) {
+    public SoundGenerator() {
         this.method = Settings.synthesizingMethod;
-        this.evolveDuration = evolveDuration;
+        this.evolveDuration = Settings.soundNoteDuration;
         try {
             init();
         } catch (Exception e) {

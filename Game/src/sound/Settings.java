@@ -13,6 +13,7 @@ public class Settings {
 
     public static KeyLayout soundLayout = new CMelodicMinor();
 
+    public static int soundNoteDuration = 100;
     public static StartPositions startPosition = StartPositions.GLIDER;
 
     public static SynthesizingMethod synthesizingMethod = new NewBornOnly();

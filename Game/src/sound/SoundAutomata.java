@@ -32,7 +32,6 @@ public class SoundAutomata {
             int px = p.x() + offset.x();
             int py = p.y() + offset.y();
             this.board.setState(new BooleanState(true), px, py);
-            System.out.printf("\t(%s, %s)\n", px, py);
         }
         //printInitialBoard();
         //System.exit(1);
@@ -111,7 +110,7 @@ public class SoundAutomata {
         for (int i = 0; i < 8; i++) {
             int newX = (x + dx[i] + width) % width;
             int newY = (y + dy[i] + height) % height;
-            if (prevState.getState(newX, newY).isChecked()) {
+            if (prevState.getState(newX, newY).getState()) {
                 aliveNeighbors++;
             }
         }
