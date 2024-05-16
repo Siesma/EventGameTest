@@ -63,7 +63,7 @@ public class Window {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
         // Create the window
-        window = glfwCreateWindow(1600, 1600, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(1200, 1200, "Hello World!", NULL, NULL);
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -122,7 +122,7 @@ public class Window {
 
             // Render the grid
             renderGrid();
-
+//            Thread.sleep(10000);
             glfwSwapBuffers(window); // swap the color buffers
             soundEngine.playBoard(board);
             Thread.sleep(Settings.soundNoteDuration);

@@ -25,6 +25,7 @@ public class SoundMap {
         }
     }
 
+
     public static int findOctave (int x, int y, int n) {
         int necessaryOctaves = (n % 7) + 1;
         int bracket = x % 7;

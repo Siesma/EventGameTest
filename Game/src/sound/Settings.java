@@ -11,11 +11,11 @@ import sound.synthesizeMethods.SynthesizingMethod;
 
 public class Settings {
 
-    public static KeyLayout soundLayout = new CMelodicMinor();
+    public static KeyLayout soundLayout = new AMajorScale();
 
     public static int soundNoteDuration = 100;
     public static StartPositions startPosition = StartPositions.GLIDER;
 
-    public static SynthesizingMethod synthesizingMethod = new NewBornOnly();
+    public static SynthesizingMethod synthesizingMethod = new HighestAlive();
 
 }

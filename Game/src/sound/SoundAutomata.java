@@ -30,7 +30,7 @@ public class SoundAutomata {
 
         for (Pair p : startState.getCoordinatePairs()) {
             int px = p.x() + offset.x();
-            int py = p.y() + offset.y();
+            int py = p.y() + offset.y() + 2;
             this.board.setState(new BooleanState(true), px, py);
         }
         //printInitialBoard();
