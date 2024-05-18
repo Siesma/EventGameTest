@@ -12,15 +12,6 @@ import java.util.ArrayList;
 
 public class AllAlive implements SynthesizingMethod {
 
-    @Override
-    public ArrayList<Integer> notesToPlay(SoundAutomata automata) {
-        ArrayList<Integer> out = new ArrayList<>();
-        int gridSize = automata.getBoard().getWidth();
-        for(Pair p : cellsToPlay(automata)) {
-            out.add(SoundMap.intFromString(SoundMap.getFromMap(Settings.soundLayout, p.x(), p.y()) + SoundMap.findOctave(p.x(), p.y(), gridSize)));
-        }
-        return out;
-    }
 
     @Override
     public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {

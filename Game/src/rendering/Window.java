@@ -100,8 +100,7 @@ public class Window {
         // Make the window visible
         glfwShowWindow(window);
         this.soundEngine = new SoundGenerator();
-        int gridSize = 17;
-        this.board = new SoundAutomata(gridSize, gridSize);
+        this.board = new SoundAutomata(Settings.gridSize, Settings.gridSize);
     }
 
     private void loop() throws InterruptedException {
@@ -147,8 +146,8 @@ public class Window {
             for (int y = 0; y < gridSize; y++) {
                 if (board.getBoard().getState(x, y).isChecked()) { // Swap x and y
                     // Calculate cell position with inverted y-coordinate
-                    float xPos = x * cellSize - 1.0f;
-                    float yPos = (gridSize - y - 1) * cellSize - 1.0f; // Invert y-coordinate
+                    float xPos = (x) * cellSize - 1.0f;
+                    float yPos = (y) * cellSize - 1.0f; // Invert y-coordinate
                     Pair check = new Pair(x, y);
                     if (Settings.synthesizingMethod.cellsToPlay(board).contains(check)) {
                         // Render cells to play differently (e.g., change color)

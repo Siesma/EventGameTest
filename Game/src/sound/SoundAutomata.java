@@ -15,8 +15,8 @@ public class SoundAutomata {
         int w = board.getWidth();
         int h = board.getHeight();
 
-        for (int i = 0; i < w; i++) {
-            for (int j = 0; j < h; j++) {
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
                 this.board.getBoard()[i][j] = new Cell<>(new BooleanState(false));
                 this.prevBoard.getBoard()[i][j] = new Cell<>(new BooleanState(false));
             }
@@ -25,15 +25,18 @@ public class SoundAutomata {
         if (center) {
             offset = startState.calculateRequiredOffset(gridSize);
         } else {
-            offset = new Pair(0, 0);
+            //offset = new Pair(0, 0);
+            offset = new Pair(4, 4);
         }
 
         for (Pair p : startState.getCoordinatePairs()) {
-            int px = p.x() + offset.x();
-            int py = p.y() + offset.y() + 2;
+            int px = p.x() + offset.y();
+            int py = p.y() + offset.x();
+            //System.out.printf("(%s, %s)\n", px, py);
             this.board.setState(new BooleanState(true), px, py);
         }
-        //printInitialBoard();
+
+        //printBoard();
         //System.exit(1);
     }
 
@@ -55,7 +58,7 @@ public class SoundAutomata {
     public SoundAutomata(int w, int h) {
         this.board = new Board<>(w, h);
         this.prevBoard = new Board<>(w, h);
-        loadInitialState(Settings.startPosition, true, Math.max(w, h));
+        loadInitialState(Settings.startPosition, false, Math.max(w, h));
     }
 
     private Board<BooleanState> cloneBoard() {

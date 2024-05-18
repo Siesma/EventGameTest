@@ -11,15 +11,6 @@ import sound.keyLayouts.AMajorScale;
 import java.util.ArrayList;
 
 public class NewBornOnly implements SynthesizingMethod {
-    @Override
-    public ArrayList<Integer> notesToPlay(SoundAutomata automata) {
-        ArrayList<Integer> notes = new ArrayList<>();
-        int gridSize = automata.getBoard().getWidth();
-        for(Pair p : cellsToPlay(automata)) {
-            notes.add(SoundMap.intFromString(SoundMap.getFromMap(Settings.soundLayout, p.x(), p.y()) + SoundMap.findOctave(p.x(), p.y(), gridSize)));
-        }
-        return notes;
-    }
 
     @Override
     public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {

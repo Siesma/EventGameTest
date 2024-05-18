@@ -13,32 +13,22 @@ import java.util.ArrayList;
 public class HighestAlive implements SynthesizingMethod {
 
     @Override
-    public ArrayList<Integer> notesToPlay(SoundAutomata automata) {
-        ArrayList<Integer> notes = new ArrayList<>();
-        int grizdSize = automata.getBoard().getWidth();
-        for(Pair p : cellsToPlay(automata)) {
-            notes.add(SoundMap.intFromString(SoundMap.getFromMap(Settings.soundLayout, p.x(), p.y()) + SoundMap.findOctave(p.x(), p.y(), grizdSize)));
-        }
-        return notes;
-    }
-
-    @Override
     public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {
         ArrayList<Pair> notes = new ArrayList<>();
         Board<BooleanState> board = automata.getBoard();
-        for(int j = 0; j < board.getHeight(); j++) {
+        for (int i = 0; i < board.getWidth(); i++) {
             int highest = -1;
-            for(int i = 0; i < board.getWidth(); i++) {
-                if(board.getState(i, j).isChecked()) {
-                    if(highest == -1 || i > highest) {
-                        highest = i;
+            for (int j = 0; j < board.getHeight(); j++) {
+                if (board.getState(i, j).isChecked()) {
+                    if (highest == -1 || j > highest) {
+                        highest = j;
                     }
                 }
             }
-            if(highest == -1) {
+            if (highest == -1) {
                 continue;
             }
-            notes.add(new Pair(highest, j));
+            notes.add(new Pair(i, highest));
         }
         return notes;
     }

@@ -11,4 +11,10 @@ public record Pair(int x, int y) implements Comparable<Pair>{
             return -1;
         }
     }
+
+    @Override
+    public String toString () {
+        return String.format("(%s, %s)", x(), y());
+    }
+
 }
