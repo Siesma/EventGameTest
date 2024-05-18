@@ -30,7 +30,7 @@ public class SoundMap {
         int necessaryOctaves = (n % 7) + 1;
         int bracket = x % 7;
         int octave = bracket + (2 - necessaryOctaves / 2);
-        return octave;
+        return 2;
     }
 
 

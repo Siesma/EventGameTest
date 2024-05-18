@@ -12,8 +12,6 @@ public interface KeyLayout {
 
         x += soundGridOffset.getY();
         y += soundGridOffset.getX();
-        x = x;
-        y = y;
         //int index = (x-(2*y));
         int index = (y-(2*x));
 

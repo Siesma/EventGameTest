@@ -5,11 +5,15 @@ import board.BooleanState;
 import board.Cell;
 import other.Pair;
 
+import java.util.ArrayList;
+
 public class SoundAutomata {
 
     private final Board<BooleanState> board;
 
     private Board<BooleanState> prevBoard;
+
+    private ArrayList<Pair> newBornInStep;
 
     private void loadInitialState(StartPositions startState, boolean center, int gridSize) {
         int w = board.getWidth();
@@ -26,12 +30,15 @@ public class SoundAutomata {
             offset = startState.calculateRequiredOffset(gridSize);
         } else {
             //offset = new Pair(0, 0);
-            offset = new Pair(4, 4);
+            //offset = new Pair(4, 4);
+            offset = startState.getOffsetToCenter();
         }
 
         for (Pair p : startState.getCoordinatePairs()) {
+
             int px = p.x() + offset.y();
             int py = p.y() + offset.x();
+            newBornInStep.add(new Pair(px, py));
             //System.out.printf("(%s, %s)\n", px, py);
             this.board.setState(new BooleanState(true), px, py);
         }
@@ -41,10 +48,10 @@ public class SoundAutomata {
     }
 
     public void printBoard() {
-        for(int i = 0; i < board.getWidth(); i++) {
-            for(int j = 0; j < board.getHeight(); j++) {
+        for (int i = 0; i < board.getWidth(); i++) {
+            for (int j = 0; j < board.getHeight(); j++) {
                 char ch = ' ';
-                if(board.getState(i, j).isChecked()) {
+                if (board.getState(i, j).isChecked()) {
                     ch = '#';
                 } else {
                     ch = '-';
@@ -58,6 +65,7 @@ public class SoundAutomata {
     public SoundAutomata(int w, int h) {
         this.board = new Board<>(w, h);
         this.prevBoard = new Board<>(w, h);
+        this.newBornInStep = new ArrayList<>();
         loadInitialState(Settings.startPosition, false, Math.max(w, h));
     }
 
@@ -83,6 +91,24 @@ public class SoundAutomata {
             }
         } catch (Exception e) {
             System.err.println(e.toString());
+        }
+        updateNewborn(prevBoard, board);
+    }
+
+    public ArrayList<Pair> getNewBornInStep() {
+        return newBornInStep;
+    }
+
+    private void updateNewborn(Board<BooleanState> prev, Board<BooleanState> now) {
+        this.newBornInStep.clear();
+        for (int i = 0; i < prev.getWidth(); i++) {
+            for (int j = 0; j < prev.getHeight(); j++) {
+                boolean before = prev.getState(i, j).getState().booleanValue();
+                boolean after = now.getState(i, j).getState().booleanValue();
+                if (!before && after) {
+                    newBornInStep.add(new Pair(i, j));
+                }
+            }
         }
     }
 

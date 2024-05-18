@@ -14,6 +14,7 @@ public class NewBornOnly implements SynthesizingMethod {
 
     @Override
     public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {
+        /*
         Board<BooleanState> board = automata.getBoard();
         Board<BooleanState> prevBoard = automata.getPrevBoard();
 
@@ -29,8 +30,7 @@ public class NewBornOnly implements SynthesizingMethod {
                 }
             }
         }
-
-
-        return notes;
+        */
+        return new ArrayList<>(automata.getNewBornInStep());
     }
 }

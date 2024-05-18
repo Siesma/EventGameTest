@@ -1,5 +1,9 @@
 package board;
 
+import other.Pair;
+
+import java.util.ArrayList;
+
 public class Board<T extends CellState<?>> {
     private final Cell<T>[][] board;
 
@@ -33,6 +37,18 @@ public class Board<T extends CellState<?>> {
         int safeX = (x + width) % width;
         int safeY = (y + height) % height;
         return board[safeX][safeY].state;
+    }
+
+    public ArrayList<Pair> getAliveStates () {
+        ArrayList<Pair> pairs = new ArrayList<>();
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                if(getState(i, j).isChecked()) {
+                    pairs.add(new Pair(i, j));
+                }
+            }
+        }
+        return pairs;
     }
 
     public int getWidth() {

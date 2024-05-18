@@ -11,6 +11,7 @@ import sound.keyLayouts.AMajorScale;
 import sound.keyLayouts.KeyLayout;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class Main {
 
@@ -19,8 +20,8 @@ public class Main {
 
 
         SoundAutomata automata = new SoundAutomata(17, 17);
-
-        KeyLayout layout = new AMajorScale();
+        System.out.println(automata.getNewBornInStep().toString());
+        KeyLayout layout = Settings.soundLayout;
 
 //        automata.printBoard();
 //        System.exit(1);
@@ -29,7 +30,12 @@ public class Main {
 
         for (int i = 0; i < 17; i++) {
             for (int j = 0; j < 17; j++) {
-                System.out.printf(cell, layout.getKey(i, j), automata.getBoard().getState(i, j).getState() ? 1 : 0);
+                int state = 0;
+                state = automata.getBoard().getState(i, j).getState() ? 1 : 0;
+                if(Settings.synthesizingMethod.cellsToPlay(automata).contains(new Pair(i,j))) {
+                    state = 2;
+                }
+                System.out.printf(cell, layout.getKey(i, j), state);
             }
             System.out.println();
 
