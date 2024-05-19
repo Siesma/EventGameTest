@@ -47,6 +47,19 @@ public class SoundAutomata {
         //System.exit(1);
     }
 
+    public boolean isDead () {
+        for(int i = 0; i < getBoard().getWidth(); i++) {
+            for(int j = 0; j < getBoard().getHeight(); j++) {
+                boolean now = board.getState(i,j).isChecked();
+                boolean prev = prevBoard.getState(i,j).isChecked();
+                if(now != prev) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public void printBoard() {
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {
@@ -67,6 +80,14 @@ public class SoundAutomata {
         this.prevBoard = new Board<>(w, h);
         this.newBornInStep = new ArrayList<>();
         loadInitialState(Settings.startPosition, false, Math.max(w, h));
+    }
+
+    public void playAutomate (SoundGenerator gen) throws InterruptedException {
+        while(!this.isDead()) {
+            gen.playBoard(this);
+            Thread.sleep(Settings.soundNoteDuration);
+            this.step();
+        }
     }
 
     private Board<BooleanState> cloneBoard() {

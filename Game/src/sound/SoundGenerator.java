@@ -42,7 +42,7 @@ public class SoundGenerator {
         // Set instrument (optional, you can choose different instruments)
         Instrument[] instruments = synthesizer.getDefaultSoundbank().getInstruments();
         listInstruments(instruments);
-        synthesizer.loadInstrument(instruments[1]);
+        synthesizer.loadInstrument(instruments[3]);
     }
 
     private void listInstruments (Instrument[] instruments) {
@@ -90,9 +90,7 @@ public class SoundGenerator {
             activeNotes.add(new ActiveNote(note, expirationTime));
 
             int channelIndex = activeNotes.size() % channels.size();
-            channels.get(channelIndex).noteOn(note, 100); // Note on
-
-            System.out.println("Playing: " + SoundMap.getFromInt(note));
+            channels.get(channelIndex).noteOn(note, 30); // Note on
         }
     }
 
@@ -112,7 +110,7 @@ public class SoundGenerator {
                             }
                         }
                     }
-                    Thread.sleep(10); // Check every 10 milliseconds
+                    Thread.sleep(Settings.soundAccuracy);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

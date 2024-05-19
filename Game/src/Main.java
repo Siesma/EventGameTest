@@ -14,17 +14,14 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         (new Window()).run();
-        //System.exit(1);
 
-        int x = 1;
-        int cx = 8;
-        int dx = x - cx;
-        double curOctave = 4 + Math.floor((double) dx / Settings.soundLayout.getLayout().length());
+        SoundGenerator gen = new SoundGenerator();
+        SoundAutomata automata = new SoundAutomata(Settings.gridSize, Settings.gridSize);
 
-        System.out.println(curOctave);
+//        automata.playAutomate(gen);
 
-        SoundAutomata automata = new SoundAutomata(17, 17);
-        System.out.println(automata.getNewBornInStep().toString());
+        System.exit(1);
+
         KeyLayout layout = Settings.soundLayout;
         automata.step();
         automata.step();
