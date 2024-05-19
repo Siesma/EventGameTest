@@ -15,6 +15,7 @@ public class SoundGenerator {
     private Synthesizer synthesizer;
     private List<MidiChannel> channels;
     private final List<ActiveNote> activeNotes = new ArrayList<>();
+    private int instrumentIndex = 9; // Default to instrument index 127
 
     public SoundGenerator() {
         this.method = Settings.synthesizingMethod;
@@ -39,18 +40,33 @@ public class SoundGenerator {
                 channels.add(channel);
             }
         }
-        // Set instrument (optional, you can choose different instruments)
+        // List instruments and load the default instrument
         Instrument[] instruments = synthesizer.getDefaultSoundbank().getInstruments();
         listInstruments(instruments);
-        synthesizer.loadInstrument(instruments[3]);
+        loadInstrument(instrumentIndex);
     }
 
-    private void listInstruments (Instrument[] instruments) {
+    private void listInstruments(Instrument[] instruments) {
         for (int i = 0; i < instruments.length; i++) {
             Instrument instrument = instruments[i];
             System.out.println(i + " " + instrument.toString());
         }
+    }
 
+    public void loadInstrument(int index) {
+        if (synthesizer == null || synthesizer.getDefaultSoundbank() == null) {
+            return;
+        }
+        Instrument[] instruments = synthesizer.getDefaultSoundbank().getInstruments();
+        if (index < 0 || index >= instruments.length) {
+            throw new IllegalArgumentException("Invalid instrument index: " + index);
+        }
+        synthesizer.loadInstrument(instruments[index]);
+        for (MidiChannel channel : channels) {
+            channel.programChange(index); // Change program for each channel
+        }
+        this.instrumentIndex = index;
+        System.out.println("Loaded instrument: " + instruments[index].toString());
     }
 
     private void destroy() {
@@ -90,7 +106,7 @@ public class SoundGenerator {
             activeNotes.add(new ActiveNote(note, expirationTime));
 
             int channelIndex = activeNotes.size() % channels.size();
-            channels.get(channelIndex).noteOn(note, 30); // Note on
+            channels.get(channelIndex).noteOn(note, 25); // Note on with volume (velocity) 100
         }
     }
 

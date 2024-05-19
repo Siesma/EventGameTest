@@ -8,6 +8,7 @@ import other.Vector2D;
 import sound.Settings;
 import sound.SoundAutomata;
 import sound.SoundGenerator;
+import sound.StartPositions;
 
 import java.nio.*;
 
@@ -114,7 +115,10 @@ public class Window {
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
+            if(board.isDead()) {
+                //board.loadInitialState(StartPositions.values()[(int) (Math.random() * StartPositions.values().length)], false, 17);
+                break;
+            }
             // Render the grid
             renderGrid();
 //            Thread.sleep(10000);

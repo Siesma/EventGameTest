@@ -12,7 +12,6 @@ import java.net.Socket;
 
 public class Client {
 
-
     private Socket socket;
     private InputStream inputStream;
     private OutputStream outputStream;
@@ -29,7 +28,9 @@ public class Client {
 
     @EventSubscriber
     public void handleSoundUpdateEvent (SoundUpdateEvent e) {
+        for(String s : e.getKeys()) {
 
+        }
     }
 
 

@@ -15,7 +15,7 @@ public class SoundAutomata {
 
     private ArrayList<Vector2D> newBornInStep;
 
-    private void loadInitialState(StartPositions startState, boolean center, int gridSize) {
+    public void loadInitialState(StartPositions startState, boolean center, int gridSize) {
         int w = board.getWidth();
         int h = board.getHeight();
 
