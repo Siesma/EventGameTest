@@ -3,6 +3,7 @@ package game.client;
 import event.Event;
 import event.EventSubscriber;
 import event.events.InformationEvent;
+import event.events.SoundUpdateEvent;
 import game.packet.AbstractPacket;
 
 import java.io.InputStream;
@@ -23,6 +24,12 @@ public class Client {
     @EventSubscriber
     public void handleInformationEvent(InformationEvent e) {
         System.out.println("Handled information packet");
+    }
+
+
+    @EventSubscriber
+    public void handleSoundUpdateEvent (SoundUpdateEvent e) {
+
     }
 
 

@@ -2,19 +2,16 @@ package sound.synthesizeMethods;
 
 import board.Board;
 import board.BooleanState;
-import other.Pair;
-import sound.Settings;
+import other.Vector2D;
 import sound.SoundAutomata;
-import sound.SoundMap;
-import sound.keyLayouts.AMajorScale;
 
 import java.util.ArrayList;
 
 public class HighestAlive implements SynthesizingMethod {
 
     @Override
-    public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {
-        ArrayList<Pair> notes = new ArrayList<>();
+    public ArrayList<Vector2D> cellsToPlay(SoundAutomata automata) {
+        ArrayList<Vector2D> notes = new ArrayList<>();
         Board<BooleanState> board = automata.getBoard();
         for (int i = 0; i < board.getWidth(); i++) {
             int highest = -1;
@@ -28,7 +25,7 @@ public class HighestAlive implements SynthesizingMethod {
             if (highest == -1) {
                 continue;
             }
-            notes.add(new Pair(i, highest));
+            notes.add(new Vector2D(i, highest));
         }
         return notes;
     }

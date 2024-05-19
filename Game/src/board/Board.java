@@ -1,6 +1,6 @@
 package board;
 
-import other.Pair;
+import other.Vector2D;
 
 import java.util.ArrayList;
 
@@ -39,16 +39,16 @@ public class Board<T extends CellState<?>> {
         return board[safeX][safeY].state;
     }
 
-    public ArrayList<Pair> getAliveStates () {
-        ArrayList<Pair> pairs = new ArrayList<>();
+    public ArrayList<Vector2D> getAliveStates () {
+        ArrayList<Vector2D> vector2DS = new ArrayList<>();
         for(int i = 0; i < getWidth(); i++) {
             for(int j = 0; j < getHeight(); j++) {
                 if(getState(i, j).isChecked()) {
-                    pairs.add(new Pair(i, j));
+                    vector2DS.add(new Vector2D(i, j));
                 }
             }
         }
-        return pairs;
+        return vector2DS;
     }
 
     public int getWidth() {

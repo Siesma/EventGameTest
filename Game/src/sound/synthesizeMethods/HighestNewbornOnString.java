@@ -1,24 +1,20 @@
 package sound.synthesizeMethods;
 
-import board.Board;
-import board.BooleanState;
-import other.Pair;
+import other.Vector2D;
 import sound.Settings;
 import sound.SoundAutomata;
-import sound.SoundMap;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 public class HighestNewbornOnString implements SynthesizingMethod {
 
     @Override
-    public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {
-        ArrayList<Pair> notes = new ArrayList<>();
+    public ArrayList<Vector2D> cellsToPlay(SoundAutomata automata) {
+        ArrayList<Vector2D> notes = new ArrayList<>();
         for (int i = 0; i < Settings.gridSize; i++) {
             int highest = -1;
             for (int j = 0; j < Settings.gridSize; j++) {
-                if (automata.getBoard().getState(i, j).isChecked() && automata.getNewBornInStep().contains(new Pair(i, j))) {
+                if (automata.getBoard().getState(i, j).isChecked() && automata.getNewBornInStep().contains(new Vector2D(i, j))) {
                     if (highest == -1 || j > highest) {
                         highest = j;
                     }
@@ -27,7 +23,7 @@ public class HighestNewbornOnString implements SynthesizingMethod {
             if (highest == -1) {
                 continue;
             }
-            notes.add(new Pair(i, highest));
+            notes.add(new Vector2D(i, highest));
         }
         return notes;
     }

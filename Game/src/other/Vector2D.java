@@ -1,8 +1,8 @@
 package other;
 
-public record Pair(int x, int y) implements Comparable<Pair>{
+public record Vector2D(int x, int y) implements Comparable<Vector2D>{
     @Override
-    public int compareTo(Pair o) {
+    public int compareTo(Vector2D o) {
         if(this.x == o.x && this.y == o.y) {
             return 0;
         } else if (this.x > o.x && this.y > o.y) {

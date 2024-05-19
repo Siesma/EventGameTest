@@ -1,16 +1,10 @@
 package sound;
 
-import other.Pair;
+import other.Vector2D;
 import sound.keyLayouts.KeyLayout;
 
-import javax.sound.midi.Instrument;
-import javax.sound.midi.MidiChannel;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Synthesizer;
-import javax.sound.sampled.LineUnavailableException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class SoundMap {
 
@@ -31,7 +25,7 @@ public class SoundMap {
     public static int findOctave(int x, int y, int n) {
 
         int middleCOctave = 3;
-        Pair startOfMiddleOctave = startOfMiddleOffset;
+        Vector2D startOfMiddleOctave = startOfMiddleOffset;
         int dx = x - startOfMiddleOctave.x();
         int dy = y - startOfMiddleOctave.y();
 
@@ -40,7 +34,7 @@ public class SoundMap {
 
     }
 
-    private static final Pair startOfMiddleOffset;
+    private static final Vector2D startOfMiddleOffset;
     static {
         int mx = 8;
         int my = 8;
@@ -50,7 +44,7 @@ public class SoundMap {
             curNote = Settings.soundLayout.getKey(mx, my);
 
         }
-        startOfMiddleOffset = new Pair(mx, my);
+        startOfMiddleOffset = new Vector2D(mx, my);
     }
 
 

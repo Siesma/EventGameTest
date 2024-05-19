@@ -3,7 +3,7 @@ package sound;
 import board.Board;
 import board.BooleanState;
 import board.Cell;
-import other.Pair;
+import other.Vector2D;
 
 import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ public class SoundAutomata {
 
     private Board<BooleanState> prevBoard;
 
-    private ArrayList<Pair> newBornInStep;
+    private ArrayList<Vector2D> newBornInStep;
 
     private void loadInitialState(StartPositions startState, boolean center, int gridSize) {
         int w = board.getWidth();
@@ -25,7 +25,7 @@ public class SoundAutomata {
                 this.prevBoard.getBoard()[i][j] = new Cell<>(new BooleanState(false));
             }
         }
-        Pair offset;
+        Vector2D offset;
         if (center) {
             offset = startState.calculateRequiredOffset(gridSize);
         } else {
@@ -34,11 +34,11 @@ public class SoundAutomata {
             offset = startState.getOffsetToCenter();
         }
 
-        for (Pair p : startState.getCoordinatePairs()) {
+        for (Vector2D p : startState.getCoordinatePairs()) {
 
             int px = p.x() + offset.y();
             int py = p.y() + offset.x();
-            newBornInStep.add(new Pair(px, py));
+            newBornInStep.add(new Vector2D(px, py));
             //System.out.printf("(%s, %s)\n", px, py);
             this.board.setState(new BooleanState(true), px, py);
         }
@@ -116,7 +116,7 @@ public class SoundAutomata {
         updateNewborn(prevBoard, board);
     }
 
-    public ArrayList<Pair> getNewBornInStep() {
+    public ArrayList<Vector2D> getNewBornInStep() {
         return newBornInStep;
     }
 
@@ -127,7 +127,7 @@ public class SoundAutomata {
                 boolean before = prev.getState(i, j).getState().booleanValue();
                 boolean after = now.getState(i, j).getState().booleanValue();
                 if (!before && after) {
-                    newBornInStep.add(new Pair(i, j));
+                    newBornInStep.add(new Vector2D(i, j));
                 }
             }
         }

@@ -1,11 +1,14 @@
 package event;
 
-public interface Event {
+import java.util.HashMap;
 
+public abstract class Event {
+    private HashMap<String, Object> content;
 
-    default String postInformation() {
-        return "";
+    protected abstract String postInformation();
+
+    public Event () {
+
     }
-
 
 }

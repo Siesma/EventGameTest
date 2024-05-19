@@ -1,14 +1,7 @@
-import event.EventBus;
-import event.events.InformationEvent;
-import game.client.Client;
-import other.Pair;
+import other.Vector2D;
 import rendering.Window;
 import sound.*;
-import sound.keyLayouts.AMajorScale;
 import sound.keyLayouts.KeyLayout;
-
-import java.util.ArrayList;
-import java.util.Set;
 
 public class Main {
 
@@ -38,7 +31,7 @@ public class Main {
             for (int j = 0; j < 17; j++) {
                 int state = 0;
                 state = automata.getBoard().getState(i, j).getState() ? 1 : 0;
-                if (Settings.synthesizingMethod.cellsToPlay(automata).contains(new Pair(i, j))) {
+                if (Settings.synthesizingMethod.cellsToPlay(automata).contains(new Vector2D(i, j))) {
                     state = 2;
                 }
                 System.out.printf(cell, layout.getKey(i, j), state);

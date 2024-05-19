@@ -1,19 +1,14 @@
 package sound.synthesizeMethods;
 
-import board.Board;
-import board.BooleanState;
-import other.Pair;
-import sound.Settings;
+import other.Vector2D;
 import sound.SoundAutomata;
-import sound.SoundMap;
-import sound.keyLayouts.AMajorScale;
 
 import java.util.ArrayList;
 
 public class NewBornOnly implements SynthesizingMethod {
 
     @Override
-    public ArrayList<Pair> cellsToPlay(SoundAutomata automata) {
+    public ArrayList<Vector2D> cellsToPlay(SoundAutomata automata) {
         /*
         Board<BooleanState> board = automata.getBoard();
         Board<BooleanState> prevBoard = automata.getPrevBoard();

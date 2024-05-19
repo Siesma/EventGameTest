@@ -1,19 +1,15 @@
 package rendering;
 
-import event.EventBus;
-import event.events.InformationEvent;
-import game.client.Client;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
-import other.Pair;
+import other.Vector2D;
 import sound.Settings;
 import sound.SoundAutomata;
 import sound.SoundGenerator;
 
 import java.nio.*;
-import java.util.Set;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -148,7 +144,7 @@ public class Window {
                     // Calculate cell position with inverted y-coordinate
                     float xPos = (x) * cellSize - 1.0f;
                     float yPos = (y) * cellSize - 1.0f; // Invert y-coordinate
-                    Pair check = new Pair(x, y);
+                    Vector2D check = new Vector2D(x, y);
                     if (Settings.synthesizingMethod.cellsToPlay(board).contains(check)) {
                         // Render cells to play differently (e.g., change color)
                         glColor3f(1.0f, 0.0f, 0.0f); // Red color
