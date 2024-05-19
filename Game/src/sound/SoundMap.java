@@ -30,20 +30,27 @@ public class SoundMap {
 
     public static int findOctave(int x, int y, int n) {
 
-        int middleCOctave = 3;
-        Pair centerPoint = new Pair(n / 2, n / 2); // (8,8)
+        int middleCOctave = 4;
+        Pair startOfMiddleOctave = startOfMiddleOffset;
+        int dx = x - startOfMiddleOctave.x();
+        int dy = y - startOfMiddleOctave.y();
 
-        int dx = x - centerPoint.x();
-        int dy = y - centerPoint.y();
+        int distance = dy-2*dx;
+        return middleCOctave + (int) (Math.floor((double) distance / 7));
 
-        int numOctavesSkippedX = (int) Math.floor((double) dx / Settings.soundLayout.getLayout().split(" ").length);
-        int numOctavesSkippedY = (int) Math.floor((double) dy / Settings.soundLayout.getLayout().split(" ").length);
+    }
 
-        int MIDIMiddleC = 60;
-        int dMiddleC = 0;
+    private static final Pair startOfMiddleOffset;
+    static {
+        int mx = 8;
+        int my = 8;
+        String curNote = Settings.soundLayout.getKey(mx, my);
+        while(!(curNote.equals("C") || curNote.equals("C#") || curNote.equals("Cb"))) {
+            my--;
+            curNote = Settings.soundLayout.getKey(mx, my);
 
-        return middleCOctave + numOctavesSkippedY - 2 * numOctavesSkippedX;
-
+        }
+        startOfMiddleOffset = new Pair(mx, my);
     }
 
 

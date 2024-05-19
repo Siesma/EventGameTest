@@ -26,12 +26,14 @@ public class Main {
         SoundAutomata automata = new SoundAutomata(17, 17);
         System.out.println(automata.getNewBornInStep().toString());
         KeyLayout layout = Settings.soundLayout;
-
-        System.out.println("test:" + SoundMap.findOctave(16, 16, 17));
+        automata.step();
+        automata.step();
+        automata.step();
+        System.out.println("test:" + SoundMap.findOctave(8, 10, 17));
 
 
 //        automata.printBoard();
- //       System.exit(1);
+    //    System.exit(1);
 
         String cell = "| %-3s %s ";
 

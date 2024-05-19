@@ -41,7 +41,7 @@ public abstract class KeyLayout {
         return out;
     }
 
-    private static HashMap<String, Integer> noteToPosition;
+    private static final HashMap<String, Integer> noteToPosition = new HashMap<>();
 
     static {
         noteToPosition.put("C", 0);
@@ -56,7 +56,6 @@ public abstract class KeyLayout {
         noteToPosition.put("A", 9);
         noteToPosition.put("A#", 10);
         noteToPosition.put("B", 11);
-
     }
 
     protected int dStep(String keyA, String keyB) {
