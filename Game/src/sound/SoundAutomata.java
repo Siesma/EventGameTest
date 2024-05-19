@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 public class SoundAutomata {
 
-    private final Board<BooleanState> board;
+    private Board<BooleanState> board;
 
     private Board<BooleanState> prevBoard;
 
@@ -19,43 +19,50 @@ public class SoundAutomata {
 
     private HashSet<String> previousStates;
 
-    public void loadInitialState(StartPositions startState, boolean center, int gridSize) {
+    public void loadInitialState(StartPositions startState, boolean procedural, int gridSize) {
+
+        this.board = new Board<>(gridSize, gridSize);
+        this.prevBoard = new Board<>(gridSize, gridSize);
+        this.newBornInStep = new ArrayList<>();
+
         int w = board.getWidth();
         int h = board.getHeight();
 
         this.previousStates = new HashSet<>();
-        this.previousStates.clear();
 
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
-                this.board.getBoard()[i][j] = new Cell<>(new BooleanState(Math.random() > 0.5));
+                if(procedural) {
+                    this.board.getBoard()[i][j] = new Cell<>(new BooleanState(Math.random() > 0.5));
+                } else {
+                    this.board.getBoard()[i][j] = new Cell<>(new BooleanState(false));
+                }
                 this.prevBoard.getBoard()[i][j] = new Cell<>(new BooleanState(false));
             }
         }
-        Vector2D offset;
-        if (center) {
-            offset = startState.calculateRequiredOffset(gridSize);
-        } else {
-            offset = startState.getOffsetToCenter();
-        }
+        Vector2D offset = startState.getOffsetToCenter();
 
-        for (Vector2D p : startState.getCoordinatePairs()) {
+        if (!procedural) {
+            for (Vector2D p : startState.getCoordinatePairs()) {
 
-            int px = p.x() + offset.y();
-            int py = p.y() + offset.x();
-            newBornInStep.add(new Vector2D(px, py));
-            //this.board.setState(new BooleanState(true), px, py);
+                int px = p.x() + offset.y();
+                int py = p.y() + offset.x();
+                newBornInStep.add(new Vector2D(px, py));
+                this.board.setState(new BooleanState(true), px, py);
+            }
         }
 
     }
 
     public boolean isDead() {
         String encoded = encodeToString();
-        if(this.previousStates.contains(encoded)) {
+        if (this.previousStates.contains(encoded)) {
             System.out.println("Encountered cycle, considered dead!");
             return true;
         }
         this.previousStates.add(encoded);
+        /*
+        TODO: Figure out if there is a case in which this is necessary. Otherwise skip computation
         for (int i = 0; i < getBoard().getWidth(); i++) {
             for (int j = 0; j < getBoard().getHeight(); j++) {
                 boolean now = board.getState(i, j).isChecked();
@@ -67,13 +74,16 @@ public class SoundAutomata {
         }
         System.out.println("Nothing has changed, considered dead!");
         return true;
+        */
+
+        return false;
     }
 
     private String encodeToString() {
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {
-                out.append(board.getState(i,j).isChecked() ? 1 : 0);
+                out.append(board.getState(i, j).isChecked() ? 1 : 0);
             }
         }
         return out.toString();
@@ -99,16 +109,13 @@ public class SoundAutomata {
 
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {
-                out[i][j] = board.getState(i,j).isChecked();
+                out[i][j] = board.getState(i, j).isChecked();
             }
         }
         return out;
     }
 
     public SoundAutomata(int w, int h) {
-        this.board = new Board<>(w, h);
-        this.prevBoard = new Board<>(w, h);
-        this.newBornInStep = new ArrayList<>();
         loadInitialState(Settings.startPosition, false, Math.max(w, h));
     }
 
