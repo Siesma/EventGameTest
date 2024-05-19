@@ -1,6 +1,7 @@
 package board;
 
 import other.Vector2D;
+import sound.Settings;
 
 import java.util.ArrayList;
 
@@ -25,7 +26,9 @@ public class Board<T extends CellState<?>> {
     }
 
     public void setState (T state, int x, int y) {
-        this.board[x][y].setState(state);
+        int safeX = (x + Settings.gridSize) % Settings.gridSize;
+        int safeY = (y + Settings.gridSize) % Settings.gridSize;
+        this.board[safeX][safeY].setState(state);
     }
 
 

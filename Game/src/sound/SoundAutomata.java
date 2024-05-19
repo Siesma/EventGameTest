@@ -6,6 +6,8 @@ import board.Cell;
 import other.Vector2D;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class SoundAutomata {
 
@@ -15,13 +17,18 @@ public class SoundAutomata {
 
     private ArrayList<Vector2D> newBornInStep;
 
+    private HashSet<String> previousStates;
+
     public void loadInitialState(StartPositions startState, boolean center, int gridSize) {
         int w = board.getWidth();
         int h = board.getHeight();
 
+        this.previousStates = new HashSet<>();
+        this.previousStates.clear();
+
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
-                this.board.getBoard()[i][j] = new Cell<>(new BooleanState(false));
+                this.board.getBoard()[i][j] = new Cell<>(new BooleanState(Math.random() > 0.5));
                 this.prevBoard.getBoard()[i][j] = new Cell<>(new BooleanState(false));
             }
         }
@@ -29,8 +36,6 @@ public class SoundAutomata {
         if (center) {
             offset = startState.calculateRequiredOffset(gridSize);
         } else {
-            //offset = new Pair(0, 0);
-            //offset = new Pair(4, 4);
             offset = startState.getOffsetToCenter();
         }
 
@@ -39,25 +44,39 @@ public class SoundAutomata {
             int px = p.x() + offset.y();
             int py = p.y() + offset.x();
             newBornInStep.add(new Vector2D(px, py));
-            //System.out.printf("(%s, %s)\n", px, py);
-            this.board.setState(new BooleanState(true), px, py);
+            //this.board.setState(new BooleanState(true), px, py);
         }
 
-        //printBoard();
-        //System.exit(1);
     }
 
-    public boolean isDead () {
-        for(int i = 0; i < getBoard().getWidth(); i++) {
-            for(int j = 0; j < getBoard().getHeight(); j++) {
-                boolean now = board.getState(i,j).isChecked();
-                boolean prev = prevBoard.getState(i,j).isChecked();
-                if(now != prev) {
+    public boolean isDead() {
+        String encoded = encodeToString();
+        if(this.previousStates.contains(encoded)) {
+            System.out.println("Encountered cycle, considered dead!");
+            return true;
+        }
+        this.previousStates.add(encoded);
+        for (int i = 0; i < getBoard().getWidth(); i++) {
+            for (int j = 0; j < getBoard().getHeight(); j++) {
+                boolean now = board.getState(i, j).isChecked();
+                boolean prev = prevBoard.getState(i, j).isChecked();
+                if (now != prev) {
                     return false;
                 }
             }
         }
+        System.out.println("Nothing has changed, considered dead!");
         return true;
+    }
+
+    private String encodeToString() {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < board.getWidth(); i++) {
+            for (int j = 0; j < board.getHeight(); j++) {
+                out.append(board.getState(i,j).isChecked() ? 1 : 0);
+            }
+        }
+        return out.toString();
     }
 
     public void printBoard() {
@@ -75,6 +94,17 @@ public class SoundAutomata {
         }
     }
 
+    public boolean[][] encodeToBinary() {
+        boolean[][] out = new boolean[Settings.gridSize][Settings.gridSize];
+
+        for (int i = 0; i < board.getWidth(); i++) {
+            for (int j = 0; j < board.getHeight(); j++) {
+                out[i][j] = board.getState(i,j).isChecked();
+            }
+        }
+        return out;
+    }
+
     public SoundAutomata(int w, int h) {
         this.board = new Board<>(w, h);
         this.prevBoard = new Board<>(w, h);
@@ -82,8 +112,8 @@ public class SoundAutomata {
         loadInitialState(Settings.startPosition, false, Math.max(w, h));
     }
 
-    public void playAutomate (SoundGenerator gen) throws InterruptedException {
-        while(!this.isDead()) {
+    public void playAutomate(SoundGenerator gen) throws InterruptedException {
+        while (!this.isDead()) {
             gen.playBoard(this);
             Thread.sleep(Settings.soundNoteDuration);
             this.step();

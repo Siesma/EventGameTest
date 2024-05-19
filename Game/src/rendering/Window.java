@@ -116,8 +116,9 @@ public class Window {
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
             if(board.isDead()) {
-                //board.loadInitialState(StartPositions.values()[(int) (Math.random() * StartPositions.values().length)], false, 17);
-                break;
+                board.loadInitialState(StartPositions.values()[(int) (Math.random() * StartPositions.values().length)], false, 17);
+                Thread.sleep(Settings.soundNoteDuration);
+                //break;
             }
             // Render the grid
             renderGrid();

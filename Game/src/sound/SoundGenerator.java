@@ -15,7 +15,7 @@ public class SoundGenerator {
     private Synthesizer synthesizer;
     private List<MidiChannel> channels;
     private final List<ActiveNote> activeNotes = new ArrayList<>();
-    private int instrumentIndex = 9; // Default to instrument index 127
+    private int instrumentIndex = 1; // Default to instrument index 127
 
     public SoundGenerator() {
         this.method = Settings.synthesizingMethod;
