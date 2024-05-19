@@ -5,28 +5,27 @@ import sound.synthesizeMethods.SynthesizingMethod;
 
 import javax.sound.midi.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class SoundGenerator {
 
     private SynthesizingMethod method;
     private int evolveDuration;
-
     private Synthesizer synthesizer;
-
     private List<MidiChannel> channels;
+    private final List<ActiveNote> activeNotes = new ArrayList<>();
 
     public SoundGenerator() {
         this.method = Settings.synthesizingMethod;
         this.evolveDuration = Settings.soundNoteDuration;
         try {
             init();
+            startNoteMonitor();
         } catch (Exception e) {
             System.err.println(e.toString());
         }
-
     }
-
 
     private void init() throws MidiUnavailableException {
         synthesizer = MidiSystem.getSynthesizer();
@@ -42,7 +41,15 @@ public class SoundGenerator {
         }
         // Set instrument (optional, you can choose different instruments)
         Instrument[] instruments = synthesizer.getDefaultSoundbank().getInstruments();
-        synthesizer.loadInstrument(instruments[0]);
+        listInstruments(instruments);
+        synthesizer.loadInstrument(instruments[1]);
+    }
+
+    private void listInstruments (Instrument[] instruments) {
+        for (int i = 0; i < instruments.length; i++) {
+            Instrument instrument = instruments[i];
+            System.out.println(i + " " + instrument.toString());
+        }
 
     }
 
@@ -57,7 +64,6 @@ public class SoundGenerator {
 
     public void playSounds(String note, int duration) {
         ArrayList<Integer> listOfNotes = new ArrayList<>();
-
         if (note.matches("^[A-Z][a-z]?(-?[1-9]|0)$")) {
             listOfNotes.add(SoundMap.intFromString(note));
         } else {
@@ -73,26 +79,56 @@ public class SoundGenerator {
     }
 
     public void playSounds(int duration, List<Integer> notes) {
-        try {
-            System.out.print("Playing: { ");
-            for (int i = 0; i < notes.size(); i++) {
-                int note = notes.get(i);
-                double frequency = 440.0 * Math.pow(2.0, (note - 69) / 12.0);
-                System.out.print(SoundMap.getFromInt(note) + " ");
-                channels.get(i % channels.size()).noteOn(note, 100); // Note on
-            }
-            System.out.println("}");
+        for (int note : notes) {
+            playNote(note, duration);
+        }
+    }
 
-            // Sleep for the duration
-            Thread.sleep(duration);
+    public void playNote(int note, long ttl) {
+        synchronized (activeNotes) {
+            long expirationTime = System.currentTimeMillis() + ttl;
+            activeNotes.add(new ActiveNote(note, expirationTime));
 
-            // Turn off all notes
-            for (int i = 0; i < notes.size(); i++) {
-                int note = notes.get(i);
-                channels.get(i % channels.size()).noteOff(note); // Note off
+            int channelIndex = activeNotes.size() % channels.size();
+            channels.get(channelIndex).noteOn(note, 100); // Note on
+
+            System.out.println("Playing: " + SoundMap.getFromInt(note));
+        }
+    }
+
+    private void startNoteMonitor() {
+        Thread noteMonitor = new Thread(() -> {
+            try {
+                while (true) {
+                    long currentTime = System.currentTimeMillis();
+                    synchronized (activeNotes) {
+                        Iterator<ActiveNote> iterator = activeNotes.iterator();
+                        while (iterator.hasNext()) {
+                            ActiveNote activeNote = iterator.next();
+                            if (currentTime >= activeNote.expirationTime) {
+                                int channelIndex = activeNotes.indexOf(activeNote) % channels.size();
+                                channels.get(channelIndex).noteOff(activeNote.note); // Note off
+                                iterator.remove();
+                            }
+                        }
+                    }
+                    Thread.sleep(10); // Check every 10 milliseconds
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        });
+        noteMonitor.setDaemon(true);
+        noteMonitor.start();
+    }
+
+    private static class ActiveNote {
+        int note;
+        long expirationTime;
+
+        ActiveNote(int note, long expirationTime) {
+            this.note = note;
+            this.expirationTime = expirationTime;
         }
     }
 }

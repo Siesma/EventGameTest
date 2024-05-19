@@ -30,7 +30,7 @@ public class SoundMap {
 
     public static int findOctave(int x, int y, int n) {
 
-        int middleCOctave = 4;
+        int middleCOctave = 3;
         Pair startOfMiddleOctave = startOfMiddleOffset;
         int dx = x - startOfMiddleOctave.x();
         int dy = y - startOfMiddleOctave.y();

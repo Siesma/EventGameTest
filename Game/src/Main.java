@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         (new Window()).run();
-
+        //System.exit(1);
 
         int x = 1;
         int cx = 8;

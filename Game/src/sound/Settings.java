@@ -10,7 +10,7 @@ import sound.synthesizeMethods.*;
 public class Settings {
 
     public static KeyLayout soundLayout = new AMajorScale();
-    public static int soundNoteDuration = 125;
+    public static int soundNoteDuration = 500;
     public static StartPositions startPosition = StartPositions.LOAFER;
 
     public static int gridSize = 17;
