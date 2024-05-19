@@ -1,6 +1,6 @@
 package sound.keyLayouts;
 
-public class CMajor implements KeyLayout {
+public class CMajor extends KeyLayout {
 
     @Override
     public String getLayout () {

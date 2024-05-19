@@ -16,6 +16,6 @@ public class Settings {
     public static int gridSize = 17;
 
     public static Vector2I soundGridOffset = new Vector2I(0, 0);
-    public static SynthesizingMethod synthesizingMethod = new NewBornOnly();
+    public static SynthesizingMethod synthesizingMethod = new HighestNewbornOnString();
 
 }

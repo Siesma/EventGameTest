@@ -3,10 +3,7 @@ import event.events.InformationEvent;
 import game.client.Client;
 import other.Pair;
 import rendering.Window;
-import sound.Settings;
-import sound.SoundAutomata;
-import sound.SoundGenerator;
-import sound.StartPositions;
+import sound.*;
 import sound.keyLayouts.AMajorScale;
 import sound.keyLayouts.KeyLayout;
 
@@ -19,12 +16,22 @@ public class Main {
         (new Window()).run();
 
 
+        int x = 1;
+        int cx = 8;
+        int dx = x - cx;
+        double curOctave = 4 + Math.floor((double) dx / Settings.soundLayout.getLayout().length());
+
+        System.out.println(curOctave);
+
         SoundAutomata automata = new SoundAutomata(17, 17);
         System.out.println(automata.getNewBornInStep().toString());
         KeyLayout layout = Settings.soundLayout;
 
+        System.out.println("test:" + SoundMap.findOctave(16, 16, 17));
+
+
 //        automata.printBoard();
-//        System.exit(1);
+ //       System.exit(1);
 
         String cell = "| %-3s %s ";
 
@@ -32,15 +39,21 @@ public class Main {
             for (int j = 0; j < 17; j++) {
                 int state = 0;
                 state = automata.getBoard().getState(i, j).getState() ? 1 : 0;
-                if(Settings.synthesizingMethod.cellsToPlay(automata).contains(new Pair(i,j))) {
+                if (Settings.synthesizingMethod.cellsToPlay(automata).contains(new Pair(i, j))) {
                     state = 2;
                 }
                 System.out.printf(cell, layout.getKey(i, j), state);
             }
             System.out.println();
 
-            System.out.println("|       ".repeat(17));
-            for(int j = 0; j < 17; j++) {
+            //System.out.println("|       ".repeat(17));
+
+            for (int j = 0; j < 17; j++) {
+                System.out.print(String.format("|  %-4s ", SoundMap.findOctave(i, j, Settings.gridSize)));
+            }
+            System.out.println();
+
+            for (int j = 0; j < 17; j++) {
                 System.out.print(String.format("| %-2s %-2s ", i, j));
             }
             System.out.println();

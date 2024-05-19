@@ -1,5 +1,6 @@
 package sound;
 
+import other.Pair;
 import sound.keyLayouts.KeyLayout;
 
 import javax.sound.midi.Instrument;
@@ -9,6 +10,7 @@ import javax.sound.midi.Synthesizer;
 import javax.sound.sampled.LineUnavailableException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SoundMap {
 
@@ -26,15 +28,26 @@ public class SoundMap {
     }
 
 
-    public static int findOctave (int x, int y, int n) {
-        int necessaryOctaves = (n % 7) + 1;
-        int bracket = x % 7;
-        int octave = bracket + (2 - necessaryOctaves / 2);
-        return 2;
+    public static int findOctave(int x, int y, int n) {
+
+        int middleCOctave = 3;
+        Pair centerPoint = new Pair(n / 2, n / 2); // (8,8)
+
+        int dx = x - centerPoint.x();
+        int dy = y - centerPoint.y();
+
+        int numOctavesSkippedX = (int) Math.floor((double) dx / Settings.soundLayout.getLayout().split(" ").length);
+        int numOctavesSkippedY = (int) Math.floor((double) dy / Settings.soundLayout.getLayout().split(" ").length);
+
+        int MIDIMiddleC = 60;
+        int dMiddleC = 0;
+
+        return middleCOctave + numOctavesSkippedY - 2 * numOctavesSkippedX;
+
     }
 
 
-    public static String getFromInt (int midi) {
+    public static String getFromInt(int midi) {
         for (Map.Entry<String, Integer> entry : noteToMidiMap.entrySet()) {
             if (entry.getValue() == midi) {
                 return entry.getKey();
@@ -44,11 +57,11 @@ public class SoundMap {
 
     }
 
-    public static String getFromMap (KeyLayout layout, int x, int y) {
+    public static String getFromMap(KeyLayout layout, int x, int y) {
         return layout.getKey(x, y);
     }
 
-    public static int intFromString (String noteName) {
+    public static int intFromString(String noteName) {
         return noteToMidiMap.getOrDefault(noteName, -1);
     }
 }

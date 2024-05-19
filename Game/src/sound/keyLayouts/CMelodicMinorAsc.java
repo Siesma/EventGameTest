@@ -1,6 +1,6 @@
 package sound.keyLayouts;
 
-public class CMelodicMinorAsc implements KeyLayout {
+public class CMelodicMinorAsc extends KeyLayout {
     @Override
     public String getLayout() {
         return "D Eb F G Ab Bb C";
