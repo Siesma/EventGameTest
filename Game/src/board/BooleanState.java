@@ -1,10 +1,11 @@
 package board;
 
-public class BooleanState implements CellState<Boolean> {
+import org.joml.Vector2i;
 
-    private Boolean state;
-    public BooleanState(Boolean state) {
-        this.state = state;
+public class BooleanState extends CellState<Boolean> {
+
+    public BooleanState(Vector2i position, Boolean state) {
+        super(position, state);
     }
 
     @Override

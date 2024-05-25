@@ -1,43 +1,49 @@
 package rendering;
 
+import board.*;
+import event.EventBus;
+import event.EventSubscriber;
+import event.events.MousePressedEvent;
+import event.events.MouseReleasedEvent;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.system.MemoryStack;
+import other.Pair;
 
 import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class IsoWindow {
     private long window;
-    private static final Vector2i windowSize = new Vector2i(800, 600);
+    public static final Vector2i windowSize = new Vector2i(800, 600);
     private static final Vector2d camera = new Vector2d(0, 0);
     private static final float CAMERA_SPEED = 5.0f;
     private Vector2f cursor;
 
+    private Board<TileState> tiles;
+
+    private Vector2i tileUnderCursor;
+
+    public static Vector2i tileSize = new Vector2i(32, 16);
+
     public void run() {
         init();
         loop();
-
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
-
         glfwTerminate();
         glfwSetErrorCallback(null).free();
     }
 
     private void init() {
         GLFWErrorCallback.createPrint(System.err).set();
-
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -55,14 +61,52 @@ public class IsoWindow {
         glfwSwapInterval(1);
         glfwShowWindow(window);
         GL.createCapabilities();
+        // Initialize the tile grid
+        int n = 30;
+        int m = 30;
+        tiles = new Board<>(n, m);
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                TileState tileState = new TileState(new Vector2i(i, j), 0);
+                tiles.getBoard()[i][j] = new Cell<>(tileState);
+                EventBus.register(tileState);
+            }
+        }
+
+        glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
+            if (action == GLFW_PRESS) {
+                EventBus.raise(
+                        new MousePressedEvent(
+                                new Pair<String, Integer>("Button", button),
+                                new Pair<String, Integer>("Action", action),
+                                new Pair<String, Vector2f>("MousePosition", cursor),
+                                new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
+
+                        )
+                );
+            } else if (action == GLFW_RELEASE) {
+                EventBus.raise(
+                        new MouseReleasedEvent(
+                                new Pair<String, Integer>("Button", button),
+                                new Pair<String, Integer>("Action", action),
+                                new Pair<String, Vector2f>("MousePosition", cursor),
+                                new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
+
+                        )
+                );
+            }
+        });
+
+
     }
+
 
     private void loop() {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(0, windowSize.x(), windowSize.y(), 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
-
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         while (!glfwWindowShouldClose(window)) {
@@ -72,8 +116,13 @@ public class IsoWindow {
             glLoadIdentity();
             glTranslated(-camera.x, -camera.y, 0);
 
-            renderGrid();
 
+            float worldCursorX = cursor.x + (float) camera.x;
+            float worldCursorY = cursor.y + (float) camera.y;
+
+            tileUnderCursor = screenToIso(worldCursorX, worldCursorY, tileSize.x(), tileSize.y());
+
+            renderGrid();
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -95,39 +144,26 @@ public class IsoWindow {
     }
 
     private void renderGrid() {
-        int n = 30;
-        int m = 30;
-        int tileWidth = 32;
-        int tileHeight = 16;
-
-        for (int x = 0; x < n; x++) {
-            for (int y = 0; y < m; y++) {
-                float screenX = (x - y) * (tileWidth / 2.0f) + windowSize.x / 2.0f;
-                float screenY = (x + y) * (tileHeight / 2.0f) + windowSize.y / 2.0f;
-                renderTile(screenX, screenY, tileWidth, tileHeight);
+        for (int x = 0; x < tiles.getWidth(); x++) {
+            for (int y = 0; y < tiles.getHeight(); y++) {
+                Cell<TileState> tile = tiles.getBoard()[x][y];
+                boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
+                tile.getState().render(highlight, windowSize);
             }
         }
     }
 
-    private void renderTile(float screenX, float screenY, int tileWidth, int tileHeight) {
-        glPushMatrix();
-        glTranslatef(screenX, screenY, 0);
+    private Vector2i screenToIso(float screenX, float screenY, int tileWidth, int tileHeight) {
+        screenX -= windowSize.x() / 2.0f;
+        screenY -= windowSize.y() / 2.0f;
 
-        float mag = new Vector2f(screenX, screenY).distance(cursor);
-        glColor3f(1.0f, map(mag, 0, 400, 0, 1), 1.0f);
+        float isoX = (screenX / (tileWidth / 2.0f) + screenY / (tileHeight / 2.0f)) / 2.0f;
+        float isoY = (screenY / (tileHeight / 2.0f) - screenX / (tileWidth / 2.0f)) / 2.0f;
 
-        glBegin(GL_QUADS);
-        glVertex2f(0, 0);
-        glVertex2f(tileWidth / 2.0f, tileHeight / 2.0f);
-        glVertex2f(tileWidth, 0);
-        glVertex2f(tileWidth / 2.0f, -tileHeight / 2.0f);
-        glEnd();
+        int tileX = (int) Math.floor(isoX);
+        int tileY = (int) Math.floor(isoY);
 
-        glPopMatrix();
-    }
-
-    private static float map(float value, float istart, float istop, float ostart, float ostop) {
-        return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+        return new Vector2i(tileX, tileY+1);
     }
 
     private Vector2f getCursorPos(long windowID) {

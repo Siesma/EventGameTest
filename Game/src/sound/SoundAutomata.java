@@ -3,6 +3,7 @@ package sound;
 import board.Board;
 import board.BooleanState;
 import board.Cell;
+import org.joml.Vector2i;
 import other.Vector2D;
 
 import java.util.ArrayList;
@@ -33,11 +34,11 @@ public class SoundAutomata {
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
                 if(procedural) {
-                    this.board.getBoard()[i][j] = new Cell<>(new BooleanState(Math.random() > 0.5));
+                    this.board.getBoard()[i][j] = new Cell<>(new BooleanState(new Vector2i(i, j), Math.random() > 0.5));
                 } else {
-                    this.board.getBoard()[i][j] = new Cell<>(new BooleanState(false));
+                    this.board.getBoard()[i][j] = new Cell<>(new BooleanState(new Vector2i(i, j), false));
                 }
-                this.prevBoard.getBoard()[i][j] = new Cell<>(new BooleanState(false));
+                this.prevBoard.getBoard()[i][j] = new Cell<>(new BooleanState(new Vector2i(i, j), false));
             }
         }
         Vector2D offset = startState.getOffsetToCenter();
@@ -48,7 +49,7 @@ public class SoundAutomata {
                 int px = p.x() + offset.y();
                 int py = p.y() + offset.x();
                 newBornInStep.add(new Vector2D(px, py));
-                this.board.setState(new BooleanState(true), px, py);
+                this.board.setState(new BooleanState(new Vector2i(px, py), true), px, py);
             }
         }
 
@@ -131,7 +132,7 @@ public class SoundAutomata {
         Board<BooleanState> clone = new Board<>(this.board.getWidth(), this.board.getHeight());
         for (int i = 0; i < this.board.getWidth(); i++) {
             for (int j = 0; j < this.board.getHeight(); j++) {
-                clone.getBoard()[i][j] = new Cell<>(new BooleanState(false));
+                clone.getBoard()[i][j] = new Cell<>(new BooleanState(new Vector2i(i, j), false));
                 clone.setState(this.board.getState(i, j), i, j);
             }
         }
@@ -181,10 +182,11 @@ public class SoundAutomata {
     private BooleanState nextState(Board<BooleanState> prevState, int x, int y) {
         int aliveNeighbors = countAliveNeighbors(prevState, x, y);
         BooleanState currentState = prevState.getState(x, y);
+        Vector2i position = new Vector2i(x, y);
         if (currentState.getState()) {
-            return new BooleanState(aliveNeighbors == 2 || aliveNeighbors == 3);
+            return new BooleanState(position, aliveNeighbors == 2 || aliveNeighbors == 3);
         } else {
-            return new BooleanState(aliveNeighbors == 3);
+            return new BooleanState(position, aliveNeighbors == 3);
         }
     }
 
