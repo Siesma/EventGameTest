@@ -2,7 +2,6 @@ package rendering;
 
 import board.*;
 import event.EventBus;
-import event.EventSubscriber;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
 import org.joml.Vector2d;
@@ -16,8 +15,6 @@ import sound.SoundAutomata;
 import sound.SoundGenerator;
 
 import java.nio.DoubleBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -39,7 +36,10 @@ public class IsoWindow {
 
     SoundGenerator generator;
 
-    public static Vector2i tileSize = new Vector2i(128, 64);
+    public static Vector2i tileSize = new Vector2i(64, 32);
+
+    private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+    private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 
     public void run() {
         init();
@@ -69,9 +69,10 @@ public class IsoWindow {
         glfwSwapInterval(1);
         glfwShowWindow(window);
         GL.createCapabilities();
+
         // Initialize the tile grid
-        int n = 50;
-        int m = 50;
+        int n = 100;
+        int m = 100;
         tiles = new Board<>(n, m);
 
         for (int i = 0; i < n; i++) {
@@ -85,23 +86,21 @@ public class IsoWindow {
         glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
             if (action == GLFW_PRESS) {
                 EventBus.raise(
-                        new MousePressedEvent(
-                                new Pair<String, Integer>("Button", button),
-                                new Pair<String, Integer>("Action", action),
-                                new Pair<String, Vector2f>("MousePosition", cursor),
-                                new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
-
-                        )
+                    new MousePressedEvent(
+                        new Pair<String, Integer>("Button", button),
+                        new Pair<String, Integer>("Action", action),
+                        new Pair<String, Vector2f>("MousePosition", cursor),
+                        new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
+                    )
                 );
             } else if (action == GLFW_RELEASE) {
                 EventBus.raise(
-                        new MouseReleasedEvent(
-                                new Pair<String, Integer>("Button", button),
-                                new Pair<String, Integer>("Action", action),
-                                new Pair<String, Vector2f>("MousePosition", cursor),
-                                new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
-
-                        )
+                    new MouseReleasedEvent(
+                        new Pair<String, Integer>("Button", button),
+                        new Pair<String, Integer>("Action", action),
+                        new Pair<String, Vector2f>("MousePosition", cursor),
+                        new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
+                    )
                 );
             }
         });
@@ -109,16 +108,14 @@ public class IsoWindow {
         this.automata = new SoundAutomata(m, n);
         this.generator = new SoundGenerator();
 
-    }
-
-
-    private void loop() {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(0, windowSize.x(), windowSize.y(), 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    }
 
+    private void loop() {
         while (!glfwWindowShouldClose(window)) {
             long curTime = System.currentTimeMillis();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -126,7 +123,6 @@ public class IsoWindow {
             updateCamera();
             glLoadIdentity();
             glTranslated(-camera.x, -camera.y, 0);
-
 
             float worldCursorX = cursor.x + (float) camera.x;
             float worldCursorY = cursor.y + (float) camera.y;
@@ -141,76 +137,58 @@ public class IsoWindow {
         }
     }
 
+    private boolean isTileVisible(Vector2i tilePosition, Vector2i tileSize) {
+        int screenX = (tilePosition.x - tilePosition.y) * tileSize.x / 2;
+        int screenY = (tilePosition.x + tilePosition.y) * tileSize.y / 2;
+
+        screenX -= camera.x;
+        screenY -= camera.y;
+
+        return screenX + tileSize.x >= -windowSize.x/2 && screenX <= windowSize.x/2 &&
+            (screenY + tileSize.y) >= -windowSize.y/2 && (screenY - tileSize.y) <= windowSize.y/2;
+    }
+
+
     private void updateCamera() {
+        double moveSpeed = CAMERA_SPEED * glfwGetTime() * 100;
+        glfwSetTime(0.0);
+
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            camera.x -= CAMERA_SPEED;
+            camera.x -= moveSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            camera.x += CAMERA_SPEED;
+            camera.x += moveSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.y -= CAMERA_SPEED;
+            camera.y -= moveSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.y += CAMERA_SPEED;
+            camera.y += moveSpeed;
         }
     }
 
     private void renderGrid() {
-//        for (int x = 0; x < tiles.getWidth(); x++) {
-//            for (int y = 0; y < tiles.getHeight(); y++) {
-//                Cell<TileState> tile = tiles.getBoard()[x][y];
-//                boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
-//                tile.getState().render(highlight, windowSize);
-//            }
-//        }
-
-        List<TileState> visibleTiles = getVisibleTiles();
-
-        for (TileState tile : visibleTiles) {
-            boolean highlight = tile.getPosition().x == tileUnderCursor.x && tile.getPosition().y == tileUnderCursor.y;
-            tile.render(highlight);
-        }
-
-
-    }
-
-    private List<TileState> getVisibleTiles() {
-        List<TileState> visibleTiles = new ArrayList<>();
-
-        // Adjust for the camera's position
-        float offsetX = (float) camera.x;
-        float offsetY = (float) camera.y;
-
-        // Calculate the corners of the viewport in world coordinates
-        Vector2f topLeft = screenToIso(-offsetX, -offsetY, tileSize.x(), tileSize.y());
-        Vector2f topRight = screenToIso(windowSize.x() - offsetX, -offsetY, tileSize.x(), tileSize.y());
-        Vector2f bottomLeft = screenToIso(-offsetX, windowSize.y() - offsetY, tileSize.x(), tileSize.y());
-        Vector2f bottomRight = screenToIso(windowSize.x() - offsetX, windowSize.y() - offsetY, tileSize.x(), tileSize.y());
-
-        // Determine the min and max coordinates for x and y
-        int minX = (int) Math.max(0, Math.min(Math.min(topLeft.x(), topRight.x()), Math.min(bottomLeft.x(), bottomRight.x())));
-        int maxX = (int) Math.min(tiles.getWidth() - 1, Math.max(Math.max(topLeft.x(), topRight.x()), Math.max(bottomLeft.x(), bottomRight.x())));
-        int minY = (int) Math.max(0, Math.min(Math.min(topLeft.y(), topRight.y()), Math.min(bottomLeft.y(), bottomRight.y())));
-        int maxY = (int) Math.min(tiles.getHeight() - 1, Math.max(Math.max(topLeft.y(), topRight.y()), Math.max(bottomLeft.y(), bottomRight.y())));
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                visibleTiles.add(tiles.getBoard()[x][y].getState());
+        for (int x = 0; x < tiles.getWidth(); x++) {
+            for (int y = 0; y < tiles.getHeight(); y++) {
+                Vector2i tilePosition = new Vector2i(x, y);
+                if (isTileVisible(tilePosition, tileSize)) {
+                    Cell<TileState> tile = tiles.getBoard()[x][y];
+                    if(tile.getState().isChecked()) {
+                        System.out.println("I can be seen");
+                    }
+                    boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
+                    tile.getState().render(highlight);
+                }
             }
         }
-
-        return visibleTiles;
     }
 
-
-
     private Vector2f screenToIso(float screenX, float screenY, int tileWidth, int tileHeight) {
-        screenX -= windowSize.x() / 2.0f;
-        screenY -= windowSize.y() / 2.0f;
+        float offsetX = screenX - windowSize.x() / 2.0f;
+        float offsetY = screenY - windowSize.y() / 2.0f;
 
-        float isoX = (screenX / (tileWidth / 2.0f) + screenY / (tileHeight / 2.0f)) / 2.0f;
-        float isoY = (screenY / (tileHeight / 2.0f) - screenX / (tileWidth / 2.0f)) / 2.0f;
+        float isoX = (offsetX / (tileWidth / 2.0f) + offsetY / (tileHeight / 2.0f)) / 2.0f;
+        float isoY = (offsetY / (tileHeight / 2.0f) - offsetX / (tileWidth / 2.0f)) / 2.0f;
 
         float tileX = (float) Math.floor(isoX);
         float tileY = (float) Math.floor(isoY);
@@ -219,8 +197,6 @@ public class IsoWindow {
     }
 
     private Vector2f getCursorPos(long windowID) {
-        DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
-        DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
         glfwGetCursorPos(windowID, xBuffer, yBuffer);
         return new Vector2f((float) xBuffer.get(0), (float) yBuffer.get(0));
     }
