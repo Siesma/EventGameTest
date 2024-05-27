@@ -1,5 +1,6 @@
 package board;
 
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import rendering.IsoWindow;
 
@@ -12,9 +13,14 @@ public abstract class CellState<T> {
 
     protected T state;
 
-    public CellState(Vector2i position, T state) {
+    protected Vector2f screenPos;
+
+    public CellState(Vector2i position, T state, Vector2i windowSize) {
         this.position = position;
         this.state = state;
+        float screenX = (position.x - position.y) * (IsoWindow.tileSize.x() / 2.0f) + windowSize.x() / 2.0f;
+        float screenY = (position.x + position.y) * (IsoWindow.tileSize.y() / 2.0f) + windowSize.y() / 2.0f;
+        this.screenPos = new Vector2f(screenX, screenY);
     }
 
     abstract boolean isChecked();
@@ -23,13 +29,14 @@ public abstract class CellState<T> {
 
     abstract T getState();
 
+    public Vector2i getPosition() {
+        return position;
+    }
 
-    public void render(boolean highlight, Vector2i windowSize) {
-        float screenX = (position.x - position.y) * (IsoWindow.tileSize.x() / 2.0f) + windowSize.x() / 2.0f;
-        float screenY = (position.x + position.y) * (IsoWindow.tileSize.y() / 2.0f) + windowSize.y() / 2.0f;
+    public void render(boolean highlight) {
 
         glPushMatrix();
-        glTranslatef(screenX, screenY, 0);
+        glTranslatef(screenPos.x, screenPos.y, 0);
 
         if (highlight) {
             glColor3f(1.0f, 0.0f, 0.0f);
