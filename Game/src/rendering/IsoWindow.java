@@ -11,8 +11,6 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import other.Pair;
-import sound.SoundAutomata;
-import sound.SoundGenerator;
 
 import java.nio.DoubleBuffer;
 
@@ -31,10 +29,6 @@ public class IsoWindow {
     private Board<TileState> tiles;
 
     private Vector2i tileUnderCursor;
-
-    SoundAutomata automata;
-
-    SoundGenerator generator;
 
     private float zoomLevel;
 
@@ -118,10 +112,6 @@ public class IsoWindow {
             zoomLevel = Math.max(Math.min(zoomLevel, 100), 5);
 
         });
-
-
-        this.automata = new SoundAutomata(m, n);
-        this.generator = new SoundGenerator();
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
