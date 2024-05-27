@@ -42,7 +42,7 @@ public class Board<T extends CellState<?>> {
         return board[safeX][safeY].state;
     }
 
-    public ArrayList<Vector2D> getAliveStates () {
+    public ArrayList<Vector2D> countCheckedStates() {
         ArrayList<Vector2D> vector2DS = new ArrayList<>();
         for(int i = 0; i < getWidth(); i++) {
             for(int j = 0; j < getHeight(); j++) {

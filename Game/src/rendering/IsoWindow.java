@@ -23,7 +23,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class IsoWindow {
     private long window;
-    public static final Vector2i windowSize = new Vector2i(800, 600);
+    public static final Vector2i windowSize = new Vector2i(1920, 1080);
     private static final Vector2d camera = new Vector2d(0, 0);
     private static final float CAMERA_SPEED = 5.0f;
     private Vector2f cursor;
@@ -36,7 +36,9 @@ public class IsoWindow {
 
     SoundGenerator generator;
 
-    public static Vector2i tileSize = new Vector2i(64, 32);
+    private float zoomLevel;
+
+    public static Vector2i tileSize = new Vector2i(16, 8);
 
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
@@ -105,6 +107,19 @@ public class IsoWindow {
             }
         });
 
+        this.zoomLevel = 0;
+        glfwSetScrollCallback(window, (window, xOffset, yOffset) -> {
+            if (yOffset > 0) {
+                zoomLevel++;
+            } else if (yOffset < 0) {
+                zoomLevel--;
+            }
+
+            zoomLevel = Math.max(Math.min(zoomLevel, 100), 5);
+
+        });
+
+
         this.automata = new SoundAutomata(m, n);
         this.generator = new SoundGenerator();
 
@@ -150,8 +165,7 @@ public class IsoWindow {
 
 
     private void updateCamera() {
-        double moveSpeed = CAMERA_SPEED * glfwGetTime() * 100;
-        glfwSetTime(0.0);
+        double moveSpeed = CAMERA_SPEED;
 
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
             camera.x -= moveSpeed;
@@ -173,9 +187,6 @@ public class IsoWindow {
                 Vector2i tilePosition = new Vector2i(x, y);
                 if (isTileVisible(tilePosition, tileSize)) {
                     Cell<TileState> tile = tiles.getBoard()[x][y];
-                    if(tile.getState().isChecked()) {
-                        System.out.println("I can be seen");
-                    }
                     boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
                     tile.getState().render(highlight);
                 }
