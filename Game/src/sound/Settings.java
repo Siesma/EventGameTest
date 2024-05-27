@@ -1,6 +1,6 @@
 package sound;
 
-import game.math.Vector2I;
+import other.math.Vector2I;
 import sound.keyLayouts.*;
 import sound.synthesizeMethods.*;
 
