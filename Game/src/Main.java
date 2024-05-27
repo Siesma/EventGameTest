@@ -1,4 +1,4 @@
-import other.Vector2D;
+import other.math.Vector2D;
 import rendering.Window;
 import sound.*;
 import sound.keyLayouts.KeyLayout;

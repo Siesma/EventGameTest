@@ -1,6 +1,6 @@
 package sound;
 
-import other.Vector2D;
+import other.math.Vector2D;
 import sound.keyLayouts.KeyLayout;
 
 import java.util.HashMap;

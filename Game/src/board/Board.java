@@ -1,6 +1,6 @@
 package board;
 
-import other.Vector2D;
+import other.math.Vector2D;
 import sound.Settings;
 
 import java.util.ArrayList;

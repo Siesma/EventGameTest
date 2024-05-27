@@ -4,7 +4,7 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
-import other.Vector2D;
+import other.math.Vector2D;
 import sound.Settings;
 import sound.SoundAutomata;
 import sound.SoundGenerator;

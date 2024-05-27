@@ -1,6 +1,6 @@
 package sound.synthesizeMethods;
 
-import other.Vector2D;
+import other.math.Vector2D;
 import sound.Settings;
 import sound.SoundAutomata;
 

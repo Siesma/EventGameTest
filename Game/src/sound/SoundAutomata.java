@@ -4,7 +4,7 @@ import board.Board;
 import board.BooleanState;
 import board.Cell;
 import org.joml.Vector2i;
-import other.Vector2D;
+import other.math.Vector2D;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -2,7 +2,7 @@ package sound.synthesizeMethods;
 
 import board.Board;
 import board.BooleanState;
-import other.Vector2D;
+import other.math.Vector2D;
 import sound.SoundAutomata;
 
 import java.util.ArrayList;
