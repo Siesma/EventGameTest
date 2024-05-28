@@ -4,6 +4,7 @@ import other.math.Vector2D;
 import sound.Settings;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Board<T extends CellState<?>> {
     private final Cell<T>[][] board;

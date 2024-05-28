@@ -9,8 +9,13 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
+import other.DoublyLinkedList;
+import other.Node;
 import other.Pair;
+import other.math.MathHelper;
 
 import java.nio.DoubleBuffer;
 
@@ -23,16 +28,23 @@ public class IsoWindow {
     private long window;
     public static final Vector2i windowSize = new Vector2i(1920, 1080);
     private static final Vector2d camera = new Vector2d(0, 0);
-    private static final float CAMERA_SPEED = 5.0f;
+    private static final float CAMERA_SPEED = 50.0f;
     private Vector2f cursor;
 
     private Board<TileState> tiles;
 
     private Vector2i tileUnderCursor;
 
+
+    private DoublyLinkedList<Double> frameTimes;
+    private long frameCount;
+
+
     private float zoomLevel;
 
-    public static Vector2i tileSize = new Vector2i(16, 8);
+    private static final int size = (int) Math.pow(2, 6);
+
+    public static Vector2i tileSize = new Vector2i(size, size >> 1);
 
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
@@ -67,8 +79,8 @@ public class IsoWindow {
         GL.createCapabilities();
 
         // Initialize the tile grid
-        int n = 100;
-        int m = 100;
+        int n = 1000;
+        int m = 1000;
         tiles = new Board<>(n, m);
 
         for (int i = 0; i < n; i++) {
@@ -113,6 +125,8 @@ public class IsoWindow {
 
         });
 
+        this.frameTimes = new DoublyLinkedList<>(100);
+
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(0, windowSize.x(), windowSize.y(), 0, -1, 1);
@@ -122,35 +136,56 @@ public class IsoWindow {
 
     private void loop() {
         while (!glfwWindowShouldClose(window)) {
-            long curTime = System.currentTimeMillis();
+            long now = System.nanoTime();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             cursor = getCursorPos(window);
             updateCamera();
             glLoadIdentity();
-            glTranslated(-camera.x, -camera.y, 0);
 
             float worldCursorX = cursor.x + (float) camera.x;
             float worldCursorY = cursor.y + (float) camera.y;
 
             Vector2f Vec2ftileUnderCursor = screenToIso(worldCursorX, worldCursorY, tileSize.x(), tileSize.y());
             this.tileUnderCursor = new Vector2i((int) Vec2ftileUnderCursor.x, (int) Vec2ftileUnderCursor.y);
+
             renderGrid();
+
+            renderFrameTimes();
             glfwSwapBuffers(window);
             glfwPollEvents();
-            long timeForFrame = System.currentTimeMillis() - curTime;
-            System.out.printf("Took %s ms to render the frame\n", timeForFrame);
+
+            long then = System.nanoTime();
+            double timeInMilliseconds = (double) (then - now) / 1_000_000.0;
+            frameTimes.append(timeInMilliseconds);
+
+            if (frameTimes.getSize() >= frameTimes.getMaxNumElements()) {
+                frameTimes.deleteHead();
+            }
+            frameCount++;
+
         }
     }
 
-    private boolean isTileVisible(Vector2i tilePosition, Vector2i tileSize) {
-        int screenX = (tilePosition.x - tilePosition.y) * tileSize.x / 2;
-        int screenY = (tilePosition.x + tilePosition.y) * tileSize.y / 2;
-
-        screenX -= camera.x;
-        screenY -= camera.y;
-
-        return screenX + tileSize.x >= -windowSize.x/2 && screenX <= windowSize.x/2 &&
-            (screenY + tileSize.y) >= -windowSize.y/2 && (screenY - tileSize.y) <= windowSize.y/2;
+    public void renderFrameTimes() {
+        GL11.glPushMatrix();
+        GL11.glBegin(GL11.GL_LINE_STRIP);
+        GL11.glColor3f(1, 0, 0);
+        int frameTimeSize = 100;
+        float x = windowSize.x() - frameTimeSize - 5;
+        int numElements = Math.min(frameTimes.getMaxNumElements(), frameTimes.getSize());
+        Node<Double> cur = frameTimes.getHead();
+        for (int i = 0; i < numElements; i++) {
+            float val = cur.getData().floatValue();
+            float y = MathHelper.map(val, 0, frameTimes.getLargest().floatValue(), 0, 20);
+            GL11.glVertex2f(x, y);
+            x += (float) frameTimeSize / (float) frameTimes.getSize();
+            cur = cur.getNext();
+        }
+        if (frameCount % frameTimes.getMaxNumElements() == 0) {
+            System.out.printf("Average framerate from the last %s frames: %.5s%n", frameTimes.getMaxNumElements(), 1000 / frameTimes.getAverage());
+        }
+        GL11.glEnd();
+        GL11.glPopMatrix();
     }
 
 
@@ -164,14 +199,16 @@ public class IsoWindow {
             camera.x += moveSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.y -= moveSpeed;
+            camera.y -= moveSpeed/2;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.y += moveSpeed;
+            camera.y += moveSpeed/2;
         }
     }
 
     private void renderGrid() {
+        glPushMatrix();
+        glTranslated(-camera.x, -camera.y, 0);
         for (int x = 0; x < tiles.getWidth(); x++) {
             for (int y = 0; y < tiles.getHeight(); y++) {
                 Vector2i tilePosition = new Vector2i(x, y);
@@ -182,6 +219,18 @@ public class IsoWindow {
                 }
             }
         }
+        glPopMatrix();
+    }
+
+    private boolean isTileVisible(Vector2i tilePosition, Vector2i tileSize) {
+        int screenX = (tilePosition.x - tilePosition.y) * tileSize.x / 2;
+        int screenY = (tilePosition.x + tilePosition.y) * tileSize.y / 2;
+
+        screenX -= camera.x;
+        screenY -= camera.y;
+
+        return screenX + tileSize.x >= -windowSize.x / 2 && screenX <= windowSize.x / 2 &&
+            (screenY + tileSize.y) >= -windowSize.y / 2 && (screenY - tileSize.y) <= windowSize.y / 2;
     }
 
     private Vector2f screenToIso(float screenX, float screenY, int tileWidth, int tileHeight) {

@@ -27,14 +27,13 @@ public abstract class CellState<T> {
 
     abstract void setState(T newState);
 
-    abstract T getState();
+    public abstract T getState();
 
     public Vector2i getPosition() {
         return position;
     }
 
     public void render(boolean highlight) {
-
         glPushMatrix();
         glTranslatef(screenPos.x, screenPos.y, 0);
 
@@ -43,17 +42,16 @@ public abstract class CellState<T> {
         } else {
             glColor3f(1.0f, 1.0f, 1.0f);
         }
-        if (isChecked()) {
-            float[] rgb = {0, 0, 0};
-            if (state instanceof Integer) {
-                rgb[0] = map((Integer) state, 8, 0, 0, 1);
-                rgb[1] = map((Integer) state, 8, 0, 0, 1);
-                rgb[2] = map((Integer) state, 8, 0, 0, 1);
-            } else {
-
-            }
-            glColor3f(rgb[0], rgb[1], rgb[2]);
-        }
+//        if (isChecked()) {
+//            float[] rgb = {0, 0, 0};
+//            if (state instanceof Integer) {
+//                rgb[0] = map((Integer) state, 8, 0, 0, 1);
+//                rgb[1] = map((Integer) state, 8, 0, 0, 1);
+//                rgb[2] = map((Integer) state, 8, 0, 0, 1);
+//            } else {
+//            }
+//            glColor3f(rgb[0], rgb[1], rgb[2]);
+//        }
 
         glBegin(GL_QUADS);
         glVertex2f(0, 0);

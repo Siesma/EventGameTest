@@ -1,9 +1,11 @@
 package board;
 
+import board.wfc.WaveFunctionCollapse;
 import event.EventSubscriber;
 import event.events.MousePressedEvent;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
+import org.lwjgl.opengl.GL11;
 import rendering.IsoWindow;
 
 import java.text.NumberFormat;
@@ -47,5 +49,52 @@ public class TileState extends CellState<Integer> {
         }
 
     }
+
+
+    @Override
+    public void render(boolean highlight) {
+        int textureID = WaveFunctionCollapse.stateDictionary.getOrDefault(state == 1 ? "Water" : "Default", -1);
+//        if(position.x % 2 == 0 && position.y % 2 == 0) {
+//            return;
+//        }
+
+        if (textureID == -1) {
+            super.render(highlight);
+            return;
+        }
+
+
+        if(position.equals(0 ,0)) {
+            System.out.println("I exist" + state);
+        }
+
+        glPushMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        glTranslatef(screenPos.x, screenPos.y, 0);
+
+        glBegin(GL_QUADS);
+
+        glTexCoord2f(0, 0);
+        glVertex2f(0, 0);
+
+        glTexCoord2f(1, 1);
+        glVertex2f(IsoWindow.tileSize.x() / 2.0f, IsoWindow.tileSize.y() / 2.0f);
+
+        glTexCoord2f(1, 0);
+        glVertex2f(IsoWindow.tileSize.x(), 0);
+
+        glTexCoord2f(0, 1);
+        glVertex2f(IsoWindow.tileSize.x() / 2.0f, -IsoWindow.tileSize.y() / 2.0f);
+
+        glEnd();
+
+
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+    }
+
+
 
 }
