@@ -35,14 +35,11 @@ public class IsoWindow {
 
     private Vector2i tileUnderCursor;
 
-
-    private DoublyLinkedList<Double> frameTimes;
-    private long frameCount;
-
+    private FrameTime frameTimes;
 
     private float zoomLevel;
 
-    private static final int size = (int) Math.pow(2, 6);
+    private static final int size = (int) Math.pow(2, 8);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
 
@@ -125,7 +122,7 @@ public class IsoWindow {
 
         });
 
-        this.frameTimes = new DoublyLinkedList<>(100);
+        this.frameTimes = new FrameTime();
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -150,42 +147,13 @@ public class IsoWindow {
 
             renderGrid();
 
-            renderFrameTimes();
+            frameTimes.render();
             glfwSwapBuffers(window);
             glfwPollEvents();
-
             long then = System.nanoTime();
-            double timeInMilliseconds = (double) (then - now) / 1_000_000.0;
-            frameTimes.append(timeInMilliseconds);
-
-            if (frameTimes.getSize() >= frameTimes.getMaxNumElements()) {
-                frameTimes.deleteHead();
-            }
-            frameCount++;
+            frameTimes.update(now, then);
 
         }
-    }
-
-    public void renderFrameTimes() {
-        GL11.glPushMatrix();
-        GL11.glBegin(GL11.GL_LINE_STRIP);
-        GL11.glColor3f(1, 0, 0);
-        int frameTimeSize = 100;
-        float x = windowSize.x() - frameTimeSize - 5;
-        int numElements = Math.min(frameTimes.getMaxNumElements(), frameTimes.getSize());
-        Node<Double> cur = frameTimes.getHead();
-        for (int i = 0; i < numElements; i++) {
-            float val = cur.getData().floatValue();
-            float y = MathHelper.map(val, 0, frameTimes.getLargest().floatValue(), 0, 20);
-            GL11.glVertex2f(x, y);
-            x += (float) frameTimeSize / (float) frameTimes.getSize();
-            cur = cur.getNext();
-        }
-        if (frameCount % frameTimes.getMaxNumElements() == 0) {
-            System.out.printf("Average framerate from the last %s frames: %.5s%n", frameTimes.getMaxNumElements(), 1000 / frameTimes.getAverage());
-        }
-        GL11.glEnd();
-        GL11.glPopMatrix();
     }
 
 
@@ -199,10 +167,10 @@ public class IsoWindow {
             camera.x += moveSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.y -= moveSpeed/2;
+            camera.y -= moveSpeed / 2;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.y += moveSpeed/2;
+            camera.y += moveSpeed / 2;
         }
     }
 
