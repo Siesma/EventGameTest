@@ -3,6 +3,7 @@ package board;
 import board.wfc.WaveFunctionCollapse;
 import event.EventSubscriber;
 import event.events.MousePressedEvent;
+import org.joml.Quaterniond;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL11;
@@ -10,6 +11,7 @@ import rendering.IsoWindow;
 
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Queue;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glPopMatrix;
@@ -55,23 +57,8 @@ public class TileState extends CellState<Integer> {
     public void render(boolean highlight) {
         int textureID = WaveFunctionCollapse.stateDictionary.getOrDefault(state == 1 ? "Water" : "Default", -1);
 
-        // Render the quad
-        glPushMatrix();
-        glTranslatef(screenPos.x, screenPos.y, 0);
-
-        glColor3f(1.0f, 1.0f, 1.0f); // Set color for the quad
-        glBegin(GL_QUADS);
-
-        glVertex2f(0, 0);
-        glVertex2f(IsoWindow.tileSize.x(), 0);
-        glVertex2f(IsoWindow.tileSize.x(), IsoWindow.tileSize.y());
-        glVertex2f(0, IsoWindow.tileSize.y());
-
-        glEnd();
-        glPopMatrix();
-
         // Render the texture on top of the quad
-        if (textureID != -1) {
+        if (textureID != -1 && !highlight) {
             glPushMatrix();
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, textureID);
@@ -85,13 +72,13 @@ public class TileState extends CellState<Integer> {
             glVertex2f(0, 0);
 
             glTexCoord2f(1, 0);
-            glVertex2f(IsoWindow.tileSize.x(), 0);
+            glVertex2f(IsoWindow.tileSize.x()/2.0f, IsoWindow.tileSize.y() / 2.0f);
 
             glTexCoord2f(1, 1);
-            glVertex2f(IsoWindow.tileSize.x(), IsoWindow.tileSize.y());
+            glVertex2f(IsoWindow.tileSize.x(), 0);
 
             glTexCoord2f(0, 1);
-            glVertex2f(0, IsoWindow.tileSize.y());
+            glVertex2f(IsoWindow.tileSize.x()/2.0f, -IsoWindow.tileSize.y()/2.0f);
 
             glEnd();
 
@@ -101,22 +88,22 @@ public class TileState extends CellState<Integer> {
             super.render(highlight);
         }
 
-        // Highlight handling
-        if (highlight) {
+        if(highlight) {
+
             glPushMatrix();
             glTranslatef(screenPos.x, screenPos.y, 0);
 
-            glColor4f(1.0f, 0.0f, 0.0f, 0.5f); // Red color with 50% transparency for highlighting
             glBegin(GL_QUADS);
-
             glVertex2f(0, 0);
+            glVertex2f(IsoWindow.tileSize.x() / 2.0f, IsoWindow.tileSize.y() / 2.0f);
             glVertex2f(IsoWindow.tileSize.x(), 0);
-            glVertex2f(IsoWindow.tileSize.x(), IsoWindow.tileSize.y());
-            glVertex2f(0, IsoWindow.tileSize.y());
-
+            glVertex2f(IsoWindow.tileSize.x() / 2.0f, -IsoWindow.tileSize.y() / 2.0f);
             glEnd();
+
             glPopMatrix();
         }
+
+
     }
 
 

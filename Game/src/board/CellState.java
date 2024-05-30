@@ -53,7 +53,7 @@ public abstract class CellState<T> {
 //            glColor3f(rgb[0], rgb[1], rgb[2]);
 //        }
 
-        glBegin(GL_QUADS);
+        glBegin(GL_LINE_LOOP);
         glVertex2f(0, 0);
         glVertex2f(IsoWindow.tileSize.x() / 2.0f, IsoWindow.tileSize.y() / 2.0f);
         glVertex2f(IsoWindow.tileSize.x(), 0);
