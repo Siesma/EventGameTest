@@ -1,5 +1,6 @@
 package board;
 
+import board.wfc.Tile;
 import board.wfc.WaveFunctionCollapse;
 import event.EventSubscriber;
 import event.events.MousePressedEvent;
@@ -12,6 +13,7 @@ import rendering.TextureLoader;
 
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Queue;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -48,7 +50,7 @@ public class TileState extends CellState<Integer> {
         if (tileUnder.equals(position.x, position.y)) {
             System.out.println("Tile is under at: " + tileUnder.toString(NumberFormat.getCompactNumberInstance()));
             this.state++;
-            this.state = this.state % 8;
+            this.state = this.state % Tile.values().length;
         }
 
     }
@@ -56,7 +58,7 @@ public class TileState extends CellState<Integer> {
 
     @Override
     public void render(boolean highlight) {
-        int textureID = TextureLoader.nameToTextureIDMap.getOrDefault(state == 1 ? "Water" : "Default", -1);
+        int textureID = TextureLoader.nameToTextureIDMap.getOrDefault(Tile.getFromInt(state).getName().toLowerCase(Locale.ROOT),-1);
 
         // Render the texture on top of the quad
         if (textureID != -1 && !highlight) {

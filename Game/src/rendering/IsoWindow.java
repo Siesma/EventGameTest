@@ -27,7 +27,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class IsoWindow {
     private long window;
-    public static final Vector2i windowSize = new Vector2i(1920, 1080);
+    public static final Vector2i windowSize = new Vector2i(2560, 1440);
     private static final Vector2d camera = new Vector2d(0, 0);
     private static final float CAMERA_SPEED = 50.0f;
     private Vector2f cursor;
@@ -43,7 +43,7 @@ public class IsoWindow {
     private static final int size = (int) Math.pow(2, 8);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
-    public static Vector2i gridDimension = new Vector2i(10, 10);
+    public static Vector2i gridDimension = new Vector2i(100, 100);
 
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
@@ -124,7 +124,6 @@ public class IsoWindow {
 
         this.frameTimes = new FrameTime();
 
-        camera.add(0, gridDimension.y() / 2.0d * tileSize.y());
 
         WaveFunctionCollapse wfc = new WaveFunctionCollapse();
         wfc.collapseBoard(tiles);
