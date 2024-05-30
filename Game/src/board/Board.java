@@ -32,7 +32,6 @@ public class Board<T extends CellState<?>> {
         this.board[safeX][safeY].setState(state);
     }
 
-
     /**
      * Safe access to a cell, handles out of bounds calls
      * @return

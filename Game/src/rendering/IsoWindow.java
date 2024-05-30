@@ -1,6 +1,7 @@
 package rendering;
 
 import board.*;
+import board.wfc.WaveFunctionCollapse;
 import event.EventBus;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
@@ -42,6 +43,7 @@ public class IsoWindow {
     private static final int size = (int) Math.pow(2, 8);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
+    public static Vector2i gridDimension = new Vector2i(10, 10);
 
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
@@ -76,12 +78,10 @@ public class IsoWindow {
         GL.createCapabilities();
 
         // Initialize the tile grid
-        int n = 1000;
-        int m = 1000;
-        tiles = new Board<>(n, m);
+        tiles = new Board<>(gridDimension.x(), gridDimension.y());
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
+        for (int i = 0; i < gridDimension.x(); i++) {
+            for (int j = 0; j < gridDimension.y(); j++) {
                 TileState tileState = new TileState(new Vector2i(i, j), 0, windowSize);
                 tiles.getBoard()[i][j] = new Cell<>(tileState);
                 EventBus.register(tileState);
@@ -123,6 +123,11 @@ public class IsoWindow {
         });
 
         this.frameTimes = new FrameTime();
+
+        camera.add(0, gridDimension.y() / 2.0d * tileSize.y());
+
+        WaveFunctionCollapse wfc = new WaveFunctionCollapse();
+        wfc.collapseBoard(tiles);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();

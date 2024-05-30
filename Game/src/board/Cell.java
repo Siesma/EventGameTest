@@ -2,7 +2,6 @@ package board;
 
 public class Cell<T> {
 
-
     T state;
 
     public Cell (T state) {

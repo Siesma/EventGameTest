@@ -8,6 +8,7 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL11;
 import rendering.IsoWindow;
+import rendering.TextureLoader;
 
 import java.text.NumberFormat;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ public class TileState extends CellState<Integer> {
 
     @Override
     public void render(boolean highlight) {
-        int textureID = WaveFunctionCollapse.stateDictionary.getOrDefault(state == 1 ? "Water" : "Default", -1);
+        int textureID = TextureLoader.nameToTextureIDMap.getOrDefault(state == 1 ? "Water" : "Default", -1);
 
         // Render the texture on top of the quad
         if (textureID != -1 && !highlight) {
