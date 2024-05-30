@@ -121,6 +121,6 @@ public class WaveFunctionCollapse {
                 return tile;
             }
         }
-        return null;
+        return Tile.WATER;
     }
 }
