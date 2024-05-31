@@ -26,7 +26,7 @@ public enum Tile {
     }
 
     static {
-        VOID.allowedNeighbors = List.of();
+        VOID.allowedNeighbors = Arrays.asList(Tile.values());
         WATER.allowedNeighbors = Arrays.asList(WATER, GROUND);
         GRASS.allowedNeighbors = Arrays.asList(GRASS, GROUND, FOREST);
         GROUND.allowedNeighbors = Arrays.asList(WATER, GROUND, GRASS);

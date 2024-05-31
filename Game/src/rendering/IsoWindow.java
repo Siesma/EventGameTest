@@ -40,11 +40,10 @@ public class IsoWindow {
 
     private float zoomLevel;
 
-    private static final int size = (int) Math.pow(2, 8);
+    private static final int size = (int) Math.pow(2, 4);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
     public static Vector2i gridDimension = new Vector2i(100, 100);
-
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 
@@ -126,6 +125,7 @@ public class IsoWindow {
 
 
         WaveFunctionCollapse wfc = new WaveFunctionCollapse();
+        tiles.getState(2, 2).setState(TextureLoader.nameToTextureIDMap.get("water"));
         wfc.collapseBoard(tiles);
 
         glMatrixMode(GL_PROJECTION);

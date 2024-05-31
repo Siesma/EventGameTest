@@ -12,29 +12,27 @@ public class WaveFunctionCollapse {
     public void collapseBoard(Board<TileState> board) {
         int[][] entropyOfBoard = new int[board.getWidth()][board.getHeight()];
 
-        // Initialize entropy
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {
                 entropyOfBoard[i][j] = computeEntropy(board, i, j);
             }
         }
 
-        // Collapse the board
         while (!isBoardFullyCollapsed(board)) {
             Vector2i nextCell = findRandomLowestEntropyCell(board, entropyOfBoard);
             collapseCell(board, nextCell, entropyOfBoard);
             propagateConstraints(board, nextCell.x(), nextCell.y(), entropyOfBoard);
-            System.out.println("Propagated: " + nextCell.toString(NumberFormat.getCompactNumberInstance()) + " to state: " + board.getState(nextCell.x(), nextCell.y()).getState());
+            //System.out.println("Propagated: " + nextCell.toString(NumberFormat.getCompactNumberInstance()) + " to state: " + board.getState(nextCell.x(), nextCell.y()).getState());
         }
     }
 
     public List<Integer> getPossibleStates(Board<TileState> board, Vector2i position) {
         Set<Integer> possibleStates = new HashSet<>(Arrays.asList(
-            Tile.WATER.getTextureID(),
-            Tile.GROUND.getTextureID(),
-            Tile.GRASS.getTextureID(),
-            Tile.FOREST.getTextureID(),
-            Tile.VOID.getTextureID()  // Include VOID if it should be a possible state
+                Tile.WATER.getTextureID(),
+                Tile.GROUND.getTextureID(),
+                Tile.GRASS.getTextureID(),
+                Tile.FOREST.getTextureID(),
+                Tile.VOID.getTextureID()
         ));
 
         List<int[]> neighbors = getNeighbors(position.x(), position.y(), board.getWidth(), board.getHeight());
@@ -42,12 +40,11 @@ public class WaveFunctionCollapse {
             int nx = neighbor[0];
             int ny = neighbor[1];
             int neighborState = board.getState(nx, ny).getState();
-            if (neighborState != 0) { // If neighbor is not uninitialized
+            if (neighborState != 0) {
                 Tile neighborTile = getTileFromState(neighborState);
                 possibleStates.retainAll(getAllowedStates(neighborTile));
             }
         }
-
         return new ArrayList<>(possibleStates);
     }
 
@@ -59,7 +56,7 @@ public class WaveFunctionCollapse {
     public boolean isBoardFullyCollapsed(Board<TileState> board) {
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {
-                if (board.getState(i, j).getState() == 0) { // Assuming 0 means uninitialized
+                if (board.getState(i, j).getState() == 0) {
                     return false;
                 }
             }
@@ -97,7 +94,7 @@ public class WaveFunctionCollapse {
     }
 
     public int computeEntropy(Board<TileState> board, int x, int y) {
-        if (board.getState(x, y).getState() != 0) { // Assuming 0 means uninitialized
+        if (board.getState(x, y).getState() != 0) {
             return -1;
         }
         return getPossibleStates(board, new Vector2i(x, y)).size();
@@ -151,7 +148,7 @@ public class WaveFunctionCollapse {
                 return tile;
             }
         }
-        return Tile.VOID; // Or some default tile
+        return Tile.VOID;
     }
 
     private List<Integer> getAllowedStates(Tile tile) {
