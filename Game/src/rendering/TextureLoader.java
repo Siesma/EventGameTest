@@ -42,10 +42,9 @@ public class TextureLoader {
             return -1;
         }
 
-        System.out.println("Loaded texture: " + path + " (width: " + width.get(0) + ", height: " + height.get(0) + ", channels: " + channels.get(0) + ")");
-
         // Generate texture ID
         int textureID = glGenTextures();
+        System.out.printf("Loaded texture: %s (width: %d, height: %d, channels: %d) as ID: \"%s\"%n", path, width.get(0), height.get(0), channels.get(0), textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         // Set texture parameters

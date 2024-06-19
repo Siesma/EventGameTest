@@ -1,7 +1,10 @@
 package rendering;
 
 import board.*;
-import board.wfc.WaveFunctionCollapse;
+import board.tiles.Forest;
+import board.tiles.Grass;
+import board.tiles.Ground;
+import board.tiles.Water;
 import event.EventBus;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
@@ -17,8 +20,13 @@ import other.DoublyLinkedList;
 import other.Node;
 import other.Pair;
 import other.math.MathHelper;
+import wfc.Cell;
+import wfc.Grid;
+import wfc.WaveFunctionCollapse;
+import wfc.pattern.Tiles;
 
 import java.nio.DoubleBuffer;
+import java.util.Locale;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -32,7 +40,7 @@ public class IsoWindow {
     private static final float CAMERA_SPEED = 50.0f;
     private Vector2f cursor;
 
-    private Board<TileState> tiles;
+    private Grid tiles;
 
     private Vector2i tileUnderCursor;
 
@@ -40,10 +48,10 @@ public class IsoWindow {
 
     private float zoomLevel;
 
-    private static final int size = (int) Math.pow(2, 4);
+    private static final int size = (int) Math.pow(2, 8);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
-    public static Vector2i gridDimension = new Vector2i(100, 100);
+    public static Vector2i gridDimension = new Vector2i(200, 200);
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 
@@ -75,17 +83,6 @@ public class IsoWindow {
         glfwSwapInterval(1);
         glfwShowWindow(window);
         GL.createCapabilities();
-
-        // Initialize the tile grid
-        tiles = new Board<>(gridDimension.x(), gridDimension.y());
-
-        for (int i = 0; i < gridDimension.x(); i++) {
-            for (int j = 0; j < gridDimension.y(); j++) {
-                TileState tileState = new TileState(new Vector2i(i, j), 0, windowSize);
-                tiles.getBoard()[i][j] = new Cell<>(tileState);
-                EventBus.register(tileState);
-            }
-        }
 
         glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
             if (action == GLFW_PRESS) {
@@ -119,14 +116,34 @@ public class IsoWindow {
             zoomLevel = Math.max(Math.min(zoomLevel, 100), 5);
         });
 
+
+        Tiles.initDefaultNeighbouringCandidates();
+        Tiles.registerTileCandidate(
+            new Forest(),
+            new Ground(),
+            new Grass(),
+            new Water()
+        );
+        Tiles.initAdjacencyOfAllTiles();
+
+
+        // Initialize the tile grid
+        tiles = new Grid(gridDimension.x(), gridDimension.y(), Tiles.allTiles()) {};
+
+
         this.frameTimes = new FrameTime();
 
 
         long start = System.currentTimeMillis();
 
-        WaveFunctionCollapse wfc = new WaveFunctionCollapse();
-        tiles.getState(2, 2).setState(TextureLoader.nameToTextureIDMap.get("water"));
-        wfc.collapseBoard(tiles);
+        WaveFunctionCollapse wfc = new WaveFunctionCollapse() {
+        };
+        wfc.init(tiles);
+
+        while(!wfc.collapse()) {
+            tiles.init();
+            wfc.init(tiles);
+        }
         long end = System.currentTimeMillis();
 
         System.out.printf("It took %s ms after 1 tries\n", (end - start));
@@ -188,13 +205,67 @@ public class IsoWindow {
             for (int y = 0; y < tiles.getHeight(); y++) {
                 Vector2i tilePosition = new Vector2i(x, y);
                 if (isTileVisible(tilePosition, tileSize)) {
-                    Cell<TileState> tile = tiles.getBoard()[x][y];
+                    Cell tile = tiles.getTileSafe(x, y);
                     boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
-                    tile.getState().render(highlight);
+                    renderCell(tile, highlight);
                 }
             }
         }
         glPopMatrix();
+    }
+
+    private void renderCell(Cell cell, boolean highlight) {
+        float screenX = (cell.getPosition()[0] - cell.getPosition()[1]) * (IsoWindow.tileSize.x() / 2.0f) + windowSize.x() / 2.0f;
+        float screenY = (cell.getPosition()[0] + cell.getPosition()[1]) * (IsoWindow.tileSize.y() / 2.0f) + windowSize.y() / 2.0f;
+        Vector2f screenPos = new Vector2f(screenX, screenY);
+
+        int textureID = TextureLoader.nameToTextureIDMap.get(cell.getState().getDisplayName().toLowerCase(Locale.ROOT));
+        if(textureID != -1) {
+            glPushMatrix();
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, textureID);
+
+            glTranslatef(screenPos.x, screenPos.y, 0);
+
+            glColor3f(1.0f, 1.0f, 1.0f); // Ensure color is white to display the texture correctly
+            glBegin(GL_QUADS);
+
+            glTexCoord2f(0, 0);
+            glVertex2f(0, 0);
+
+            glTexCoord2f(1, 0);
+            glVertex2f(IsoWindow.tileSize.x()/2.0f, IsoWindow.tileSize.y() / 2.0f);
+
+            glTexCoord2f(1, 1);
+            glVertex2f(IsoWindow.tileSize.x(), 0);
+
+            glTexCoord2f(0, 1);
+            glVertex2f(IsoWindow.tileSize.x()/2.0f, -IsoWindow.tileSize.y()/2.0f);
+
+            glEnd();
+
+            glDisable(GL_TEXTURE_2D);
+            glPopMatrix();
+            return;
+        }
+
+        glPushMatrix();
+        glTranslatef(screenPos.x, screenPos.y, 0);
+        if (highlight)
+            glColor3d(0, 1, 0);
+        else
+            glColor3d(1, 0, 0);
+
+        glBegin(GL_QUADS);
+        glVertex2f(0, 0);
+        glVertex2f(IsoWindow.tileSize.x() / 2.0f, IsoWindow.tileSize.y() / 2.0f);
+        glVertex2f(IsoWindow.tileSize.x(), 0);
+        glVertex2f(IsoWindow.tileSize.x() / 2.0f, -IsoWindow.tileSize.y() / 2.0f);
+        glEnd();
+
+        glPopMatrix();
+
+
     }
 
     private boolean isTileVisible(Vector2i tilePosition, Vector2i tileSize) {

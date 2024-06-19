@@ -42,17 +42,6 @@ public abstract class CellState<T> {
         } else {
             glColor3f(1.0f, 1.0f, 1.0f);
         }
-//        if (isChecked()) {
-//            float[] rgb = {0, 0, 0};
-//            if (state instanceof Integer) {
-//                rgb[0] = map((Integer) state, 8, 0, 0, 1);
-//                rgb[1] = map((Integer) state, 8, 0, 0, 1);
-//                rgb[2] = map((Integer) state, 8, 0, 0, 1);
-//            } else {
-//            }
-//            glColor3f(rgb[0], rgb[1], rgb[2]);
-//        }
-
         glBegin(GL_LINE_LOOP);
         glVertex2f(0, 0);
         glVertex2f(IsoWindow.tileSize.x() / 2.0f, IsoWindow.tileSize.y() / 2.0f);
