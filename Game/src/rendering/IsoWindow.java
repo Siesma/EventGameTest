@@ -116,17 +116,20 @@ public class IsoWindow {
             } else if (yOffset < 0) {
                 zoomLevel--;
             }
-
             zoomLevel = Math.max(Math.min(zoomLevel, 100), 5);
-
         });
 
         this.frameTimes = new FrameTime();
 
 
+        long start = System.currentTimeMillis();
+
         WaveFunctionCollapse wfc = new WaveFunctionCollapse();
         tiles.getState(2, 2).setState(TextureLoader.nameToTextureIDMap.get("water"));
         wfc.collapseBoard(tiles);
+        long end = System.currentTimeMillis();
+
+        System.out.printf("It took %s ms after 1 tries\n", (end - start));
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -146,8 +149,8 @@ public class IsoWindow {
             float worldCursorX = cursor.x + (float) camera.x;
             float worldCursorY = cursor.y + (float) camera.y;
 
-            Vector2f Vec2ftileUnderCursor = screenToIso(worldCursorX, worldCursorY, tileSize.x(), tileSize.y());
-            this.tileUnderCursor = new Vector2i((int) Vec2ftileUnderCursor.x, (int) Vec2ftileUnderCursor.y);
+            Vector2f tileUnderCursor = screenToIso(worldCursorX, worldCursorY, tileSize.x(), tileSize.y());
+            this.tileUnderCursor = new Vector2i((int) tileUnderCursor.x, (int) tileUnderCursor.y);
 
             renderGrid();
 

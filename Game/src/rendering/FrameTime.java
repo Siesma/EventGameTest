@@ -1,5 +1,6 @@
 package rendering;
 
+import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
 import other.DoublyLinkedList;
 import other.Node;
@@ -35,18 +36,22 @@ public class FrameTime {
     }
 
     public void render() {
+        int frameTimeXSize = 100;
+        int frameTimeYSize = 20;
+        float x = windowSize.x() - frameTimeXSize - 5;
+
+        RenderHelper.rect(new Vector2f(x, 0), new Vector2f(x, frameTimeYSize));
+
         GL11.glPushMatrix();
         GL11.glBegin(GL11.GL_LINE_STRIP);
         GL11.glColor3f(1, 0, 0);
-        int frameTimeSize = 100;
-        float x = windowSize.x() - frameTimeSize - 5;
         int numElements = Math.min(frameTimes.getMaxNumElements(), frameTimes.getSize());
         Node<Double> cur = frameTimes.getHead();
         for (int i = 0; i < numElements; i++) {
             float val = cur.getData().floatValue();
-            float y = MathHelper.map(val, 0, frameTimes.getLargest().floatValue(), 0, 20);
+            float y = MathHelper.map(val, 0, frameTimes.getLargest().floatValue(), 0, frameTimeYSize);
             GL11.glVertex2f(x, y);
-            x += (float) frameTimeSize / (float) frameTimes.getSize();
+            x += (float) frameTimeXSize / (float) frameTimes.getSize();
             cur = cur.getNext();
         }
         if (frameCount % frameTimes.getMaxNumElements() == 0) {
