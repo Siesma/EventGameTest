@@ -1,10 +1,11 @@
 package rendering;
 
-import board.*;
-import board.tiles.Forest;
-import board.tiles.Grass;
-import board.tiles.Ground;
-import board.tiles.Water;
+import board.wfc.TileCell;
+import board.wfc.TileGrid;
+import board.wfc.tiles.Forest;
+import board.wfc.tiles.Grass;
+import board.wfc.tiles.Ground;
+import board.wfc.tiles.Water;
 import event.EventBus;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
@@ -13,13 +14,8 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import other.DoublyLinkedList;
-import other.Node;
 import other.Pair;
-import other.math.MathHelper;
 import wfc.Cell;
 import wfc.Grid;
 import wfc.WaveFunctionCollapse;
@@ -27,6 +23,7 @@ import wfc.pattern.Tiles;
 
 import java.nio.DoubleBuffer;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -128,7 +125,7 @@ public class IsoWindow {
 
 
         // Initialize the tile grid
-        tiles = new Grid(gridDimension.x(), gridDimension.y(), Tiles.allTiles()) {};
+        tiles = new TileGrid(Tiles.allTiles(), () -> new TileCell[gridDimension.x()][gridDimension.y()]) {};
 
 
         this.frameTimes = new FrameTime();

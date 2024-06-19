@@ -1,4 +1,4 @@
-package board.tiles;
+package board.wfc.tiles;
 
 import wfc.Vector2i;
 import wfc.pattern.Tile;
