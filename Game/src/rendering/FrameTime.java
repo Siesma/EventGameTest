@@ -1,6 +1,7 @@
 package rendering;
 
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import other.DoublyLinkedList;
 import other.Node;
@@ -40,7 +41,7 @@ public class FrameTime {
         int frameTimeYSize = 20;
         float x = windowSize.x() - frameTimeXSize - 5;
 
-        RenderHelper.rect(new Vector2f(x, 0), new Vector2f(x, frameTimeYSize));
+        RenderHelper.rect(new Vector2f(x, 0), new Vector2f(x, frameTimeYSize), new Vector4f(0.2f, 0.5f, 0, 0.4f));
 
         GL11.glPushMatrix();
         GL11.glBegin(GL11.GL_LINE_STRIP);
@@ -54,10 +55,14 @@ public class FrameTime {
             x += (float) frameTimeXSize / (float) frameTimes.getSize();
             cur = cur.getNext();
         }
-        if (frameCount % frameTimes.getMaxNumElements() == 0) {
-            System.out.printf("Average framerate from the last %s frames: %.5s%n", frameTimes.getMaxNumElements(), 1000 / frameTimes.getAverage());
-        }
         GL11.glEnd();
         GL11.glPopMatrix();
     }
+
+    public void printFrameTimeReport () {
+        if (frameCount % frameTimes.getMaxNumElements() == 0) {
+            System.out.printf("Average framerate from the last %s frames: %.5s%n", frameTimes.getMaxNumElements(), 1000 / frameTimes.getAverage());
+        }
+    }
+
 }

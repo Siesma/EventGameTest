@@ -9,9 +9,7 @@ import board.wfc.tiles.Water;
 import event.EventBus;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
-import org.joml.Vector2d;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
+import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -21,7 +19,9 @@ import wfc.Grid;
 import wfc.WaveFunctionCollapse;
 import wfc.pattern.Tiles;
 
+import java.lang.Math;
 import java.nio.DoubleBuffer;
+import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.function.Supplier;
 
@@ -29,6 +29,7 @@ import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static other.math.MathHelper.screenToIso;
 
 public class IsoWindow {
     private long window;
@@ -45,10 +46,10 @@ public class IsoWindow {
 
     private float zoomLevel;
 
-    private static final int size = (int) Math.pow(2, 8);
+    private static final int size = (int) Math.pow(2, 4);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
-    public static Vector2i gridDimension = new Vector2i(200, 200);
+    public static Vector2i gridDimension = new Vector2i(100, 100);
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 
@@ -136,15 +137,18 @@ public class IsoWindow {
         WaveFunctionCollapse wfc = new WaveFunctionCollapse() {
         };
 
+        int tries = 1;
+
         wfc.init(tiles);
 
         while(!wfc.collapse()) {
             tiles.init();
             wfc.init(tiles);
+            tries++;
         }
         long end = System.currentTimeMillis();
 
-        System.out.printf("It took %s ms after 1 tries\n", (end - start));
+        System.out.printf("It took %s ms after %s tries\n", (end - start), tries);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -170,6 +174,7 @@ public class IsoWindow {
             renderGrid();
 
             frameTimes.render();
+            frameTimes.printFrameTimeReport();
             glfwSwapBuffers(window);
             glfwPollEvents();
             long then = System.nanoTime();
@@ -197,96 +202,29 @@ public class IsoWindow {
     }
 
     private void renderGrid() {
+
         glPushMatrix();
         glTranslated(-camera.x, -camera.y, 0);
         for (int x = 0; x < tiles.getWidth(); x++) {
             for (int y = 0; y < tiles.getHeight(); y++) {
                 Vector2i tilePosition = new Vector2i(x, y);
+                TileCell tile = (TileCell) tiles.getTileSafe(x, y);
                 if (isTileVisible(tilePosition, tileSize)) {
-                    Cell tile = tiles.getTileSafe(x, y);
                     boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
-                    renderCell(tile, highlight);
+                    tile.renderCell(highlight);
                 }
             }
         }
         glPopMatrix();
     }
 
-    private void renderCell(Cell cell, boolean highlight) {
-
-        TileCell tileCell = (TileCell) cell;
-
-        int textureID = TextureLoader.nameToTextureIDMap.get(tileCell.getState().getDisplayName().toLowerCase(Locale.ROOT));
-        if(textureID != -1) {
-            glPushMatrix();
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, textureID);
-
-            glTranslatef(tileCell.getScreenPosition().x(), tileCell.getScreenPosition().y(), 0);
-
-            glColor3f(1.0f, 1.0f, 1.0f); // Ensure color is white to display the texture correctly
-            glBegin(GL_QUADS);
-
-            glTexCoord2f(0, 0);
-            glVertex2f(0, 0);
-
-            glTexCoord2f(1, 0);
-            glVertex2f(IsoWindow.tileSize.x()/2.0f, IsoWindow.tileSize.y() / 2.0f);
-
-            glTexCoord2f(1, 1);
-            glVertex2f(IsoWindow.tileSize.x(), 0);
-
-            glTexCoord2f(0, 1);
-            glVertex2f(IsoWindow.tileSize.x()/2.0f, -IsoWindow.tileSize.y()/2.0f);
-
-            glEnd();
-
-            glDisable(GL_TEXTURE_2D);
-            glPopMatrix();
-            return;
-        }
-
-        glPushMatrix();
-        glTranslatef(tileCell.getScreenPosition().x(), tileCell.getScreenPosition().y(), 0);
-        if (highlight)
-            glColor3d(0, 1, 0);
-        else
-            glColor3d(1, 0, 0);
-
-        glBegin(GL_QUADS);
-        glVertex2f(0, 0);
-        glVertex2f(IsoWindow.tileSize.x() / 2.0f, IsoWindow.tileSize.y() / 2.0f);
-        glVertex2f(IsoWindow.tileSize.x(), 0);
-        glVertex2f(IsoWindow.tileSize.x() / 2.0f, -IsoWindow.tileSize.y() / 2.0f);
-        glEnd();
-
-        glPopMatrix();
-
-
-    }
 
     private boolean isTileVisible(Vector2i tilePosition, Vector2i tileSize) {
-        int screenX = (tilePosition.x - tilePosition.y) * tileSize.x / 2;
-        int screenY = (tilePosition.x + tilePosition.y) * tileSize.y / 2;
+        int screenX = (int) (((tilePosition.x - tilePosition.y) * tileSize.x / 2) - camera.x);
+        int screenY = (int) (((tilePosition.x + tilePosition.y) * tileSize.y / 2) - camera.y);
 
-        screenX -= camera.x;
-        screenY -= camera.y;
-
-        return screenX + tileSize.x >= -windowSize.x / 2 && screenX <= windowSize.x / 2 &&
+        return screenX + tileSize.x >= -windowSize.x / 2 && (screenX - tileSize.x) <= windowSize.x / 2 &&
             (screenY + tileSize.y) >= -windowSize.y / 2 && (screenY - tileSize.y) <= windowSize.y / 2;
-    }
-
-    private Vector2f screenToIso(float screenX, float screenY, int tileWidth, int tileHeight) {
-        float offsetX = screenX - windowSize.x() / 2.0f;
-        float offsetY = screenY - windowSize.y() / 2.0f;
-
-        float isoX = (offsetX / (tileWidth / 2.0f) + offsetY / (tileHeight / 2.0f)) / 2.0f;
-        float isoY = (offsetY / (tileHeight / 2.0f) - offsetX / (tileWidth / 2.0f)) / 2.0f;
-
-        float tileX = (float) Math.floor(isoX);
-        float tileY = (float) Math.floor(isoY);
-
-        return new Vector2f(tileX, tileY + 1);
     }
 
     private Vector2f getCursorPos(long windowID) {

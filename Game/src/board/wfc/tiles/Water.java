@@ -23,8 +23,8 @@ public class Water  extends Tile {
         adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Ground"));
 
         for (Vector2i vec : Tiles.getNeighbouringCandidates().values()) {
-            adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Water"));
-            adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Ground"));
+            adjacencies.get(vec).add(Tiles.getTile("Water"));
+            adjacencies.get(vec).add(Tiles.getTile("Ground"));
         }
     }
 }

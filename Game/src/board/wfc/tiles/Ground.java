@@ -24,9 +24,9 @@ public class Ground  extends Tile {
         adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Water"));
 
         for (Vector2i vec : Tiles.getNeighbouringCandidates().values()) {
-            adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Grass"));
-            adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Ground"));
-            adjacencies.get(defaultNeighbouringVector).add(Tiles.getTile("Water"));
+            adjacencies.get(vec).add(Tiles.getTile("Grass"));
+            adjacencies.get(vec).add(Tiles.getTile("Ground"));
+            adjacencies.get(vec).add(Tiles.getTile("Water"));
         }
     }
 }
