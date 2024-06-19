@@ -17,7 +17,7 @@ public class RenderHelper {
         GL11.glVertex2f(ab.x(), 0);
         GL11.glVertex2f(ab.x(), ab.y());
         GL11.glVertex2f(0, ab.y());
-
+        glEnd();
         glPopMatrix();
     }
 
