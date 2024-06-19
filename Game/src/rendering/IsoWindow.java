@@ -135,6 +135,7 @@ public class IsoWindow {
 
         WaveFunctionCollapse wfc = new WaveFunctionCollapse() {
         };
+
         wfc.init(tiles);
 
         while(!wfc.collapse()) {
@@ -212,17 +213,16 @@ public class IsoWindow {
     }
 
     private void renderCell(Cell cell, boolean highlight) {
-        float screenX = (cell.getPosition()[0] - cell.getPosition()[1]) * (IsoWindow.tileSize.x() / 2.0f) + windowSize.x() / 2.0f;
-        float screenY = (cell.getPosition()[0] + cell.getPosition()[1]) * (IsoWindow.tileSize.y() / 2.0f) + windowSize.y() / 2.0f;
-        Vector2f screenPos = new Vector2f(screenX, screenY);
 
-        int textureID = TextureLoader.nameToTextureIDMap.get(cell.getState().getDisplayName().toLowerCase(Locale.ROOT));
+        TileCell tileCell = (TileCell) cell;
+
+        int textureID = TextureLoader.nameToTextureIDMap.get(tileCell.getState().getDisplayName().toLowerCase(Locale.ROOT));
         if(textureID != -1) {
             glPushMatrix();
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, textureID);
 
-            glTranslatef(screenPos.x, screenPos.y, 0);
+            glTranslatef(tileCell.getScreenPosition().x(), tileCell.getScreenPosition().y(), 0);
 
             glColor3f(1.0f, 1.0f, 1.0f); // Ensure color is white to display the texture correctly
             glBegin(GL_QUADS);
@@ -247,7 +247,7 @@ public class IsoWindow {
         }
 
         glPushMatrix();
-        glTranslatef(screenPos.x, screenPos.y, 0);
+        glTranslatef(tileCell.getScreenPosition().x(), tileCell.getScreenPosition().y(), 0);
         if (highlight)
             glColor3d(0, 1, 0);
         else
