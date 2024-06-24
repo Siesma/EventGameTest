@@ -41,7 +41,7 @@ public class FrameTime {
         int frameTimeYSize = 20;
         float x = windowSize.x() - frameTimeXSize - 5;
 
-        RenderHelper.rect(new Vector2f(x, 0), new Vector2f(x, frameTimeYSize), new Vector4f(0.2f, 0.5f, 0, 0.4f));
+        RenderHelper.rectAA(new Vector2f(x, 0), new Vector2f(x, frameTimeYSize), new Vector4f(0.2f, 0.5f, 0, 0.4f));
 
         GL11.glPushMatrix();
         GL11.glBegin(GL11.GL_LINE_STRIP);

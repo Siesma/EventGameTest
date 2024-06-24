@@ -7,8 +7,10 @@ import board.wfc.tiles.Grass;
 import board.wfc.tiles.Ground;
 import board.wfc.tiles.Water;
 import event.EventBus;
+import event.EventSubscriber;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
+import event.events.TimerEvent;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -23,6 +25,7 @@ import java.lang.Math;
 import java.nio.DoubleBuffer;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Timer;
 import java.util.function.Supplier;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -46,7 +49,7 @@ public class IsoWindow {
 
     private float zoomLevel;
 
-    private static final int size = (int) Math.pow(2, 4);
+    private static final int size = (int) Math.pow(2, 8);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
     public static Vector2i gridDimension = new Vector2i(100, 100);
@@ -104,6 +107,8 @@ public class IsoWindow {
             }
         });
 
+        EventBus.register(this);
+
         this.zoomLevel = 0;
         glfwSetScrollCallback(window, (window, xOffset, yOffset) -> {
             if (yOffset > 0) {
@@ -131,6 +136,8 @@ public class IsoWindow {
 
         this.frameTimes = new FrameTime();
 
+        game.Timer timer = new game.Timer(16);
+
 
         long start = System.currentTimeMillis();
 
@@ -155,6 +162,11 @@ public class IsoWindow {
         glOrtho(0, windowSize.x(), windowSize.y(), 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    @EventSubscriber
+    public void onTimerEvent (TimerEvent event) {
+        System.out.println(event.getContent());
     }
 
     private void loop() {

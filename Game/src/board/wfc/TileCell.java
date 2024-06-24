@@ -28,7 +28,7 @@ public class TileCell extends Cell {
 
     public void renderCell(boolean highlight) {
 
-        int textureID = TextureLoader.nameToTextureIDMap.get(this.getState().getDisplayName().toLowerCase(Locale.ROOT));
+        int textureID = TextureLoader.nameToTextureIDMap.getOrDefault(this.getState().getDisplayName().toLowerCase(Locale.ROOT), -1);
         if(textureID != -1) {
             glPushMatrix();
             glEnable(GL_TEXTURE_2D);
@@ -58,7 +58,6 @@ public class TileCell extends Cell {
             return;
         }
 
-        glPushMatrix();
         Vector4f colour = null;
         if (highlight)
             colour = new Vector4f(0, 1, 0, 1);
@@ -66,9 +65,12 @@ public class TileCell extends Cell {
             colour = new Vector4f(1, 0, 0, 1);
 
 
-        RenderHelper.rect(this.getScreenPosition(), new Vector2f(IsoWindow.tileSize.x() / 2.0f, -IsoWindow.tileSize.y() / 2.0f), colour);
-        glPopMatrix();
-
+        RenderHelper.rect(
+            this.getScreenPosition(),
+            new Vector2f(IsoWindow.tileSize.x(), 0),
+            new Vector2f(IsoWindow.tileSize.x() / 2.0f, -IsoWindow.tileSize.y() / 2.0f),
+            new Vector2f(IsoWindow.tileSize.x()/2.0f, -IsoWindow.tileSize.y()/2.0f),
+            colour);
 
     }
 
