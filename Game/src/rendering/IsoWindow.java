@@ -37,12 +37,12 @@ import static other.math.MathHelper.screenToIso;
 
 public class IsoWindow implements Runnable {
     private long window;
-    public static final Vector2i windowSize = new Vector2i(2560, 1440);
+    public static Vector2i windowSize = new Vector2i(2560, 1440);
     private static final Vector2d camera = new Vector2d(0, 0);
     private static final float CAMERA_SPEED = 50.0f;
     private Vector2f cursor;
 
-    private Grid tiles;
+    private TileGrid tiles;
 
     private Vector2i tileUnderCursor;
 
@@ -50,20 +50,28 @@ public class IsoWindow implements Runnable {
 
     private float zoomLevel;
 
-    private Timer timer;
-
-    private static final int size = (int) Math.pow(2, 8);
-
-    public static Vector2i tileSize = new Vector2i(size, size >> 1);
-    public static Vector2i gridDimension = new Vector2i(100, 100);
+    public static Vector2i tileSize;
+    public static Vector2i gridDimension;
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 
-    @Override
+    private boolean running;
+
+    public IsoWindow() {
+        this(new Vector2i(100, 100), (int) Math.pow(2, 8), new Vector2i(2560, 1440));
+    }
+
+    public IsoWindow(Vector2i gridDimension_, int size_, Vector2i windowSize_) {
+        gridDimension = gridDimension_;
+        tileSize = new Vector2i(size_, size_ >> 1);
+        windowSize = windowSize_;
+        this.running = true;
+    }
+
     public void run() {
         init();
         loop();
-        timer.stop();
+
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
         glfwTerminate();
@@ -141,28 +149,6 @@ public class IsoWindow implements Runnable {
 
 
         this.frameTimes = new FrameTime();
-
-        this.timer = new Timer(16, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                long now = (long) timer.get("curTime");
-                long prevTime = (long) timer.get("prevTime");
-                long deltaTime = now - prevTime;
-
-                EventBus.raise(
-                        new TimerEvent(
-                                new Pair<>("CurTime", now),
-                                new Pair<String, Long>("PrevTime", prevTime),
-                                new Pair<String, Long>("DT", deltaTime),
-                                new Pair<String, Boolean>("Running", (boolean) timer.get("running"))
-                        )
-                );
-                timer.set("prevTime", now);
-                return null;
-            }
-        });
-
-
         long start = System.currentTimeMillis();
 
         WaveFunctionCollapse wfc = new WaveFunctionCollapse() {
@@ -190,35 +176,52 @@ public class IsoWindow implements Runnable {
 
     @EventSubscriber
     public void onTimerEvent(TimerEvent event) {
-        System.out.println(event.getContent());
+
     }
 
     private void loop() {
-        while (!glfwWindowShouldClose(window)) {
+        while ((!glfwWindowShouldClose(window))) {
+
             long now = System.nanoTime();
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            cursor = getCursorPos(window);
-            updateCamera();
-            glLoadIdentity();
 
-            float worldCursorX = cursor.x + (float) camera.x;
-            float worldCursorY = cursor.y + (float) camera.y;
+            renderFrame();
 
-            Vector2f tileUnderCursor = screenToIso(worldCursorX, worldCursorY, tileSize.x(), tileSize.y());
-            this.tileUnderCursor = new Vector2i((int) tileUnderCursor.x, (int) tileUnderCursor.y);
-
-            renderGrid();
-
-            frameTimes.render();
-            frameTimes.printFrameTimeReport();
-            glfwSwapBuffers(window);
-            glfwPollEvents();
             long then = System.nanoTime();
             frameTimes.update(now, then);
-
         }
     }
 
+    private void renderFrame() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+
+        cursor = getCursorPos(window);
+        updateCamera();
+
+        this.tileUnderCursor = computeTileUnderCursosr();
+
+        renderGrid();
+
+        frameTimes.render();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+
+    }
+
+    private Vector2i computeTileUnderCursosr() {
+
+        float worldCursorX = cursor.x + (float) camera.x;
+        float worldCursorY = cursor.y + (float) camera.y;
+
+        Vector2f tileUnderCursor = screenToIso(worldCursorX, worldCursorY, tileSize.x(), tileSize.y());
+        return new Vector2i((int) tileUnderCursor.x, (int) tileUnderCursor.y);
+    }
+
+    public void stop() {
+        glfwSetWindowShouldClose(window, true);
+    }
 
     private void updateCamera() {
         double moveSpeed = CAMERA_SPEED;
@@ -240,21 +243,23 @@ public class IsoWindow implements Runnable {
     private void renderGrid() {
         glPushMatrix();
         glTranslated(-camera.x, -camera.y, 0);
+
         for (int x = 0; x < tiles.getWidth(); x++) {
             for (int y = 0; y < tiles.getHeight(); y++) {
                 Vector2i tilePosition = new Vector2i(x, y);
                 TileCell tile = (TileCell) tiles.getTileSafe(x, y);
-                if (isTileVisible(tilePosition, tileSize)) {
+                if (isTileVisible(tilePosition)) {
                     boolean highlight = x == tileUnderCursor.x && y == tileUnderCursor.y;
                     tile.renderCell(highlight);
                 }
             }
         }
+
         glPopMatrix();
     }
 
 
-    private boolean isTileVisible(Vector2i tilePosition, Vector2i tileSize) {
+    private boolean isTileVisible(Vector2i tilePosition) {
         int screenX = (int) (((tilePosition.x - tilePosition.y) * tileSize.x / 2) - camera.x);
         int screenY = (int) (((tilePosition.x + tilePosition.y) * tileSize.y / 2) - camera.y);
 
