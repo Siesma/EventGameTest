@@ -5,8 +5,6 @@ import event.EventSubscriber;
 import event.events.TimerEvent;
 import game.Timer;
 import other.Pair;
-import rendering.FrameTime;
-import rendering.IsoWindow;
 
 import java.util.concurrent.Callable;
 
@@ -14,7 +12,8 @@ public class Engine {
 
     private Timer timer;
 
-    private RenderingHandler handler;
+    private RenderingHandler renderingHandler;
+    private LogicHandler logicHandler;
 
 
     private int cycles = 0;
@@ -41,20 +40,20 @@ public class Engine {
             }
         });
 
-        this.handler = new RenderingHandler();
-        handler.run();
+        this.renderingHandler = new RenderingHandler();
+        renderingHandler.run();
     }
 
     @EventSubscriber
     public void onTimerEvent (TimerEvent event) {
-        if(!handler.running) {
+        if(!renderingHandler.running) {
             stop();
         }
     }
 
     private void stop () {
         timer.stop();
-        handler.stop();
+        renderingHandler.stop();
     }
 
     public static void main(String[] args) {
