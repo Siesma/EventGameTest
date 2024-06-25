@@ -11,6 +11,7 @@ import event.EventSubscriber;
 import event.events.MousePressedEvent;
 import event.events.MouseReleasedEvent;
 import event.events.TimerEvent;
+import game.Timer;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -25,7 +26,7 @@ import java.lang.Math;
 import java.nio.DoubleBuffer;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Timer;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -34,7 +35,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static other.math.MathHelper.screenToIso;
 
-public class IsoWindow {
+public class IsoWindow implements Runnable {
     private long window;
     public static final Vector2i windowSize = new Vector2i(2560, 1440);
     private static final Vector2d camera = new Vector2d(0, 0);
@@ -49,6 +50,8 @@ public class IsoWindow {
 
     private float zoomLevel;
 
+    private Timer timer;
+
     private static final int size = (int) Math.pow(2, 8);
 
     public static Vector2i tileSize = new Vector2i(size, size >> 1);
@@ -56,9 +59,11 @@ public class IsoWindow {
     private DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
     private DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 
+    @Override
     public void run() {
         init();
         loop();
+        timer.stop();
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
         glfwTerminate();
@@ -88,21 +93,21 @@ public class IsoWindow {
         glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
             if (action == GLFW_PRESS) {
                 EventBus.raise(
-                    new MousePressedEvent(
-                        new Pair<String, Integer>("Button", button),
-                        new Pair<String, Integer>("Action", action),
-                        new Pair<String, Vector2f>("MousePosition", cursor),
-                        new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
-                    )
+                        new MousePressedEvent(
+                                new Pair<String, Integer>("Button", button),
+                                new Pair<String, Integer>("Action", action),
+                                new Pair<String, Vector2f>("MousePosition", cursor),
+                                new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
+                        )
                 );
             } else if (action == GLFW_RELEASE) {
                 EventBus.raise(
-                    new MouseReleasedEvent(
-                        new Pair<String, Integer>("Button", button),
-                        new Pair<String, Integer>("Action", action),
-                        new Pair<String, Vector2f>("MousePosition", cursor),
-                        new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
-                    )
+                        new MouseReleasedEvent(
+                                new Pair<String, Integer>("Button", button),
+                                new Pair<String, Integer>("Action", action),
+                                new Pair<String, Vector2f>("MousePosition", cursor),
+                                new Pair<String, Vector2i>("TileUnderCursor", tileUnderCursor)
+                        )
                 );
             }
         });
@@ -122,21 +127,40 @@ public class IsoWindow {
 
         Tiles.initDefaultNeighbouringCandidates();
         Tiles.registerTileCandidate(
-            new Forest(),
-            new Ground(),
-            new Grass(),
-            new Water()
+                new Forest(),
+                new Ground(),
+                new Grass(),
+                new Water()
         );
         Tiles.initAdjacencyOfAllTiles();
 
 
         // Initialize the tile grid
-        tiles = new TileGrid(Tiles.allTiles(), () -> new TileCell[gridDimension.x()][gridDimension.y()]) {};
+        tiles = new TileGrid(Tiles.allTiles(), () -> new TileCell[gridDimension.x()][gridDimension.y()]) {
+        };
 
 
         this.frameTimes = new FrameTime();
 
-        game.Timer timer = new game.Timer(16);
+        this.timer = new Timer(16, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                long now = (long) timer.get("curTime");
+                long prevTime = (long) timer.get("prevTime");
+                long deltaTime = now - prevTime;
+
+                EventBus.raise(
+                        new TimerEvent(
+                                new Pair<>("CurTime", now),
+                                new Pair<String, Long>("PrevTime", prevTime),
+                                new Pair<String, Long>("DT", deltaTime),
+                                new Pair<String, Boolean>("Running", (boolean) timer.get("running"))
+                        )
+                );
+                timer.set("prevTime", now);
+                return null;
+            }
+        });
 
 
         long start = System.currentTimeMillis();
@@ -148,7 +172,7 @@ public class IsoWindow {
 
         wfc.init(tiles);
 
-        while(!wfc.collapse()) {
+        while (!wfc.collapse()) {
             tiles.init();
             wfc.init(tiles);
             tries++;
@@ -165,7 +189,7 @@ public class IsoWindow {
     }
 
     @EventSubscriber
-    public void onTimerEvent (TimerEvent event) {
+    public void onTimerEvent(TimerEvent event) {
         System.out.println(event.getContent());
     }
 
@@ -214,7 +238,6 @@ public class IsoWindow {
     }
 
     private void renderGrid() {
-
         glPushMatrix();
         glTranslated(-camera.x, -camera.y, 0);
         for (int x = 0; x < tiles.getWidth(); x++) {
@@ -236,7 +259,7 @@ public class IsoWindow {
         int screenY = (int) (((tilePosition.x + tilePosition.y) * tileSize.y / 2) - camera.y);
 
         return screenX + tileSize.x >= -windowSize.x / 2 && (screenX - tileSize.x) <= windowSize.x / 2 &&
-            (screenY + tileSize.y) >= -windowSize.y / 2 && (screenY - tileSize.y) <= windowSize.y / 2;
+                (screenY + tileSize.y) >= -windowSize.y / 2 && (screenY - tileSize.y) <= windowSize.y / 2;
     }
 
     private Vector2f getCursorPos(long windowID) {
