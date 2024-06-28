@@ -4,11 +4,17 @@ WFC:
 - position dependent neighbours
 - Stack based backtracking
 
+AttributeDataObject:
+- State saving
+- State loading
+
 Game:
 - troop and building display
 
 Logic:
 - player handling and world interactions
+- Client/Server
+- Packet system
 
 Rendering:
 - Convex Hull Algorithm
