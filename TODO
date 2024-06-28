@@ -1,0 +1,23 @@
+Things that have to be done, and are doable given the current state
+
+WFC:
+- position dependent neighbours
+- Stack based backtracking
+
+Game:
+- troop and building display
+
+Logic:
+- player handling and world interactions
+
+Rendering:
+- Convex Hull Algorithm
+- VAO / VBO
+- Generic shape
+- Optimization (maybe implicit)
+- Shader support
+
+Sound:
+- Generics for sound engine
+- multi-instrument instance
+- note playing datastructure
